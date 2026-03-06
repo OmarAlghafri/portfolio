@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تحليل الصور الطبية - Cardio AI Analysis</title>
+
+    <!-- CSS Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#5D5CDE',
+                        secondary: '#0463FA',
+                        dark: '#1B2C51',
+                        light: '#EFF5FF'
+                    },
+                    fontFamily: {
+                        'arabic': ['Cairo', 'system-ui', 'sans-serif']
+                    }
+                }
+            },
+            darkMode: 'class'
+        }
+
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('dark');
+        }
+    </script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Cairo', system-ui, sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #5D5CDE 0%, #0463FA 100%); }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .dark .glass-effect {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .image-preview { transition: all 0.3s ease; }
+        .image-preview:hover { transform: scale(1.05); box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .upload-zone {
+            border: 2px dashed #5D5CDE;
+            transition: all 0.3s ease;
+        }
+        .upload-zone:hover { border-color: #0463FA; background-color: rgba(93, 92, 222, 0.05); }
+        .upload-zone.dragover { border-color: #0463FA; background-color: rgba(93, 92, 222, 0.1); transform: scale(1.02); }
+        .pulse-animation { animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+        .result-card {
+            background: linear-gradient(145deg, #ffffff, #f0f0f0);
+            border-left: 4px solid #5D5CDE;
+        }
+        .dark .result-card {
+            background: linear-gradient(145deg, #2a2a2a, #1f1f1f);
+        }
+        .loading-spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #5D5CDE;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+
+<body class="bg-gray-50 dark:bg-gray-900 min-h-screen">
+    <!-- Header -->
+    <header class="gradient-bg text-white shadow-lg">
+        <div class="container mx-auto px-4 py-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <i class="fas fa-heartbeat text-3xl"></i>
+                    <div>
+                        <h1 class="text-2xl font-bold">تحليل الصور الطبية</h1>
+                        <p class="text-sm opacity-80">Cardio AI Analysis</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4">
+                    <span id="welcomeMessage" class="text-sm opacity-90 hidden md:inline"></span>
+                    <a href="info.html" class="bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg transition-all">
+                        <i class="fas fa-info-circle ml-2"></i>عن المنصة
+                    </a>
+                    <button id="logoutBtn" class="bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg transition-all">
+                        <i class="fas fa-sign-out-alt ml-2"></i>
+                        <span class="hidden md:inline">تسجيل الخروج</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- Preview Mode Banner -->
+        <div class="max-w-4xl mx-auto mb-6 p-4 bg-blue-100 dark:bg-blue-900/30 border border-blue-300 dark:border-blue-700 rounded-xl">
+            <div class="flex items-start gap-3">
+                <i class="fas fa-info-circle text-blue-600 dark:text-blue-400 text-xl mt-0.5"></i>
+                <div>
+                    <h3 class="font-bold text-blue-800 dark:text-blue-300 mb-1">وضع المعاينة (Preview Mode)</h3>
+                    <p class="text-sm text-blue-700 dark:text-blue-400">
+                        هذا العرض التجريبي يعمل بدون خادم خلفي. جميع عمليات التحليل محاكاة باستخدام بيانات وهمية.
+                        الصور التي ترفعها لن يتم تخزينها فعلياً والنتائج عشوائية لأغراض العرض فقط.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upload Section -->
+        <div class="max-w-4xl mx-auto">
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 mb-8 animate__animated animate__fadeIn">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold text-gray-800 dark:text-white mb-4">
+                        <i class="fas fa-upload text-primary ml-3"></i>
+                        رفع الصور للتحليل
+                    </h2>
+                    <p class="text-gray-600 dark:text-gray-300">
+                        اختر الصور الطبية التي تريد تحليلها للكشف عن تضخم عضلة القلب
+                    </p>
+                </div>
+
+                <!-- File Upload Zone -->
+                <div id="uploadZone" class="upload-zone rounded-xl p-12 text-center mb-6 cursor-pointer">
+                    <div class="space-y-4">
+                        <i class="fas fa-cloud-upload-alt text-6xl text-primary opacity-70"></i>
+                        <div>
+                            <p class="text-xl font-semibold text-gray-700 dark:text-gray-300">
+                                اسحب الصور هنا أو انقر للاختيار
+                            </p>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                                يدعم: JPG, PNG, JPEG (حد أقصى 10 صور)
+                            </p>
+                        </div>
+                    </div>
+                    <input type="file" id="imageInput" class="hidden" multiple accept="image/*">
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button id="selectFilesBtn" class="bg-primary hover:bg-purple-600 text-white px-8 py-3 rounded-xl font-semibold transition-all transform hover:scale-105">
+                        <i class="fas fa-images ml-2"></i>
+                        اختيار الصور
+                    </button>
+                    <button id="analyzeBtn" class="bg-secondary hover:bg-blue-600 text-white px-8 py-3 rounded-xl font-semibold transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                        <i class="fas fa-search ml-2"></i>
+                        تحليل الصور
+                    </button>
+                </div>
+            </div>
+
+            <!-- Image Previews -->
+            <div id="imagePreviewContainer" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-8" style="display: none;"></div>
+
+            <!-- Loading Section -->
+            <div id="loadingSection" class="text-center py-12" style="display: none;">
+                <div class="loading-spinner mx-auto mb-4"></div>
+                <p class="text-lg font-semibold text-gray-700 dark:text-gray-300">جاري تحليل الصور...</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400">يرجى الانتظار، قد تستغرق هذه العملية بضع ثوانٍ</p>
+            </div>
+
+            <!-- Results Section -->
+            <div id="resultsSection" class="space-y-6" style="display: none;">
+                <div class="text-center mb-6">
+                    <h3 class="text-2xl font-bold text-gray-800 dark:text-white mb-2">
+                        <i class="fas fa-chart-line text-green-500 ml-2"></i>
+                        نتائج التحليل
+                    </h3>
+                    <div class="w-24 h-1 bg-gradient-to-r from-primary to-secondary mx-auto rounded-full"></div>
+                </div>
+
+                <div id="resultsContainer" class="space-y-4"></div>
+
+                <!-- Save Results Button -->
+                <div class="text-center pt-6">
+                    <button id="saveResultsBtn" class="bg-green-500 hover:bg-green-600 text-white px-10 py-4 rounded-xl font-bold text-lg transition-all transform hover:scale-105 shadow-lg">
+                        <i class="fas fa-save ml-2"></i>
+                        حفظ النتائج في قاعدة البيانات
+                    </button>
+                </div>
+            </div>
+
+            <!-- Statistics Summary -->
+            <div id="statisticsSection" class="bg-gradient-to-r from-primary to-secondary rounded-2xl p-6 text-white" style="display: none;">
+                <h4 class="text-xl font-bold mb-4 text-center">
+                    <i class="fas fa-chart-pie ml-2"></i>
+                    ملخص النتائج
+                </h4>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
+                    <div class="glass-effect rounded-xl p-4">
+                        <div class="text-2xl font-bold" id="totalImages">0</div>
+                        <div class="text-sm opacity-90">إجمالي الصور</div>
+                    </div>
+                    <div class="glass-effect rounded-xl p-4">
+                        <div class="text-2xl font-bold" id="positiveResults">0</div>
+                        <div class="text-sm opacity-90">حالات إيجابية</div>
+                    </div>
+                    <div class="glass-effect rounded-xl p-4">
+                        <div class="text-2xl font-bold" id="averageConfidence">0%</div>
+                        <div class="text-sm opacity-90">متوسط الثقة</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 hidden">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-md mx-4 text-center animate__animated animate__bounceIn">
+            <div class="text-green-500 text-6xl mb-4">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-800 dark:text-white mb-4">تم الحفظ بنجاح!</h3>
+            <p class="text-gray-600 dark:text-gray-300 mb-6">تم حفظ جميع النتائج في قاعدة البيانات بنجاح</p>
+            <button id="closeModalBtn" class="bg-primary hover:bg-purple-600 text-white px-6 py-3 rounded-xl font-semibold transition-all">
+                موافق
+            </button>
+        </div>
+    </div>
+
+    <!-- Mock Services -->
+    <script src="mock-services.js"></script>
+
+    <script>
+        class ImageAnalyzer {
+            constructor() {
+                this.selectedFiles = [];
+                this.results = [];
+                this.token = SessionManager.getToken();
+                this.init();
+            }
+
+            init() {
+                this.checkAuth();
+                this.setupEventListeners();
+                this.setupDragAndDrop();
+            }
+
+            checkAuth() {
+                if (!this.token) {
+                    Utils.showNotification('يجب تسجيل الدخول أولاً', 'warning');
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 1500);
+                    return;
+                }
+
+                const userData = SessionManager.getUserData();
+                if (userData) {
+                    document.getElementById('welcomeMessage').textContent = `مرحباً، ${userData.name}`;
+                    document.getElementById('welcomeMessage').classList.remove('hidden');
+                }
+            }
+
+            setupEventListeners() {
+                document.getElementById('selectFilesBtn').addEventListener('click', () => {
+                    document.getElementById('imageInput').click();
+                });
+
+                document.getElementById('uploadZone').addEventListener('click', () => {
+                    document.getElementById('imageInput').click();
+                });
+
+                document.getElementById('imageInput').addEventListener('change', (e) => {
+                    this.handleFileSelection(e.target.files);
+                });
+
+                document.getElementById('analyzeBtn').addEventListener('click', () => {
+                    this.analyzeImages();
+                });
+
+                document.getElementById('saveResultsBtn').addEventListener('click', () => {
+                    this.saveResults();
+                });
+
+                document.getElementById('logoutBtn').addEventListener('click', () => {
+                    this.logout();
+                });
+
+                document.getElementById('closeModalBtn').addEventListener('click', () => {
+                    this.hideSuccessModal();
+                });
+            }
+
+            setupDragAndDrop() {
+                const uploadZone = document.getElementById('uploadZone');
+
+                uploadZone.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    uploadZone.classList.add('dragover');
+                });
+
+                uploadZone.addEventListener('dragleave', () => {
+                    uploadZone.classList.remove('dragover');
+                });
+
+                uploadZone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    uploadZone.classList.remove('dragover');
+                    this.handleFileSelection(e.dataTransfer.files);
+                });
+            }
+
+            handleFileSelection(files) {
+                const fileArray = Array.from(files);
+                const imageFiles = fileArray.filter(file => file.type.startsWith('image/'));
+
+                if (imageFiles.length === 0) {
+                    Utils.showNotification('يرجى اختيار ملفات صور صالحة', 'error');
+                    return;
+                }
+
+                if (imageFiles.length > 10) {
+                    Utils.showNotification('يمكن رفع 10 صور كحد أقصى', 'warning');
+                    return;
+                }
+
+                this.selectedFiles = imageFiles;
+                this.displayImagePreviews();
+                document.getElementById('analyzeBtn').disabled = false;
+                Utils.showNotification(`تم اختيار ${imageFiles.length} صورة`, 'success');
+            }
+
+            displayImagePreviews() {
+                const container = document.getElementById('imagePreviewContainer');
+                container.innerHTML = '';
+                container.style.display = 'grid';
+
+                this.selectedFiles.forEach((file, index) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const preview = document.createElement('div');
+                        preview.className = 'image-preview relative bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden';
+                        preview.innerHTML = `
+                            <img src="${e.target.result}" alt="Preview ${index + 1}" class="w-full h-32 object-cover">
+                            <div class="p-3">
+                                <p class="text-xs text-gray-600 dark:text-gray-300 truncate">${file.name}</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">${(file.size / 1024).toFixed(1)} KB</p>
+                            </div>
+                            <button onclick="imageAnalyzer.removeImage(${index})" class="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs transition-all">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        `;
+                        container.appendChild(preview);
+                    };
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            removeImage(index) {
+                this.selectedFiles.splice(index, 1);
+                if (this.selectedFiles.length === 0) {
+                    document.getElementById('imagePreviewContainer').style.display = 'none';
+                    document.getElementById('analyzeBtn').disabled = true;
+                } else {
+                    this.displayImagePreviews();
+                }
+            }
+
+            async analyzeImages() {
+                if (this.selectedFiles.length === 0) {
+                    Utils.showNotification('لم يتم اختيار صور', 'warning');
+                    return;
+                }
+
+                this.showLoading();
+                this.results = [];
+
+                try {
+                    for (let i = 0; i < this.selectedFiles.length; i++) {
+                        const file = this.selectedFiles[i];
+                        
+                        // Use MockAPI instead of real API
+                        const result = await MockAPI.analyzeImage(file);
+                        
+                        this.results.push({
+                            fileName: file.name,
+                            diagnosis: result.diagnosis,
+                            confidence: result.confidence,
+                            imageUrl: result.image_url
+                        });
+                    }
+
+                    this.hideLoading();
+                    this.displayResults();
+                    this.displayStatistics();
+                    Utils.showNotification('تم تحليل الصور بنجاح', 'success');
+
+                } catch (error) {
+                    this.hideLoading();
+                    Utils.showNotification('حدث خطأ أثناء التحليل', 'error');
+                    console.error('Analysis error:', error);
+                }
+            }
+
+            showLoading() {
+                document.getElementById('loadingSection').style.display = 'block';
+                document.getElementById('resultsSection').style.display = 'none';
+                document.getElementById('statisticsSection').style.display = 'none';
+            }
+
+            hideLoading() {
+                document.getElementById('loadingSection').style.display = 'none';
+            }
+
+            displayResults() {
+                const container = document.getElementById('resultsContainer');
+                container.innerHTML = '';
+
+                this.results.forEach((result, index) => {
+                    const resultCard = document.createElement('div');
+                    resultCard.className = 'result-card rounded-xl p-6 shadow-lg animate__animated animate__fadeInUp';
+                    resultCard.style.animationDelay = `${index * 0.1}s`;
+
+                    const isDiagnosed = result.diagnosis === 'cardiomegaly';
+                    const statusColor = isDiagnosed ? 'text-red-500' : 'text-green-500';
+                    const statusIcon = isDiagnosed ? 'fas fa-exclamation-triangle' : 'fas fa-check-circle';
+                    const statusText = isDiagnosed ? 'تم اكتشاف تضخم عضلة القلب' : 'لم يتم اكتشاف تضخم عضلة القلب';
+
+                    resultCard.innerHTML = `
+                        <div class="flex flex-col md:flex-row gap-4">
+                            <div class="md:w-1/3">
+                                <h4 class="font-bold text-gray-800 dark:text-white mb-2">${result.fileName}</h4>
+                                <div class="text-center">
+                                    <i class="${statusIcon} text-4xl ${statusColor} mb-2"></i>
+                                    <p class="font-semibold ${statusColor}">${statusText}</p>
+                                </div>
+                            </div>
+                            <div class="md:w-2/3">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                                        <h5 class="font-semibold text-gray-700 dark:text-gray-300 mb-2">التشخيص</h5>
+                                        <p class="text-lg font-bold ${statusColor}">${result.diagnosis === 'cardiomegaly' ? 'إيجابي' : 'سلبي'}</p>
+                                    </div>
+                                    <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                                        <h5 class="font-semibold text-gray-700 dark:text-gray-300 mb-2">مستوى الثقة</h5>
+                                        <p class="text-lg font-bold text-primary">${result.confidence}%</p>
+                                    </div>
+                                </div>
+                                <div class="mt-4">
+                                    <div class="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
+                                        <div class="bg-gradient-to-r from-primary to-secondary h-2 rounded-full transition-all duration-1000"
+                                             style="width: ${parseFloat(result.confidence)}%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                    container.appendChild(resultCard);
+                });
+
+                document.getElementById('resultsSection').style.display = 'block';
+            }
+
+            displayStatistics() {
+                const totalImages = this.results.length;
+                const positiveResults = this.results.filter(r => r.diagnosis === 'cardiomegaly').length;
+                const averageConfidence = this.results.reduce((sum, r) => sum + parseFloat(r.confidence), 0) / totalImages;
+
+                document.getElementById('totalImages').textContent = totalImages;
+                document.getElementById('positiveResults').textContent = positiveResults;
+                document.getElementById('averageConfidence').textContent = averageConfidence.toFixed(1) + '%';
+
+                document.getElementById('statisticsSection').style.display = 'block';
+            }
+
+            async saveResults() {
+                if (this.results.length === 0) return;
+
+                const saveButton = document.getElementById('saveResultsBtn');
+                saveButton.disabled = true;
+                saveButton.innerHTML = '<i class="fas fa-spinner fa-spin ml-2"></i>جاري الحفظ...';
+
+                // Simulate save delay
+                await new Promise(resolve => setTimeout(resolve, 2000));
+
+                this.showSuccessModal();
+                saveButton.disabled = false;
+                saveButton.innerHTML = '<i class="fas fa-save ml-2"></i>حفظ النتائج في قاعدة البيانات';
+            }
+
+            showSuccessModal() {
+                document.getElementById('successModal').classList.remove('hidden');
+            }
+
+            hideSuccessModal() {
+                document.getElementById('successModal').classList.add('hidden');
+            }
+
+            logout() {
+                MockAPI.logout().then(() => {
+                    window.location.href = 'login.html';
+                });
+            }
+        }
+
+        // Initialize the application
+        const imageAnalyzer = new ImageAnalyzer();
+    </script>
+</body>
+</html>

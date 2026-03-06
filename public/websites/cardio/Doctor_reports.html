@@ -1,0 +1,1638 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منصة الأطباء - إدارة شاملة للمرضى والتقارير</title>
+    
+    <!-- CSS Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#5D5CDE',
+                        secondary: '#0463FA',
+                        dark: '#1B2C51',
+                        light: '#EFF5FF',
+                        accent: '#FF6B6B',
+                        success: '#4ECDC4',
+                        warning: '#FFA726',
+                        urgent: '#F44336'
+                    },
+                    fontFamily: {
+                        'arabic': ['Cairo', 'system-ui', 'sans-serif']
+                    }
+                }
+            },
+            darkMode: 'class'
+        }
+        
+        // Dark mode detection
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('dark');
+        }
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+            if (event.matches) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        });
+    </script>
+    
+    <style>
+        body {
+            font-family: 'Cairo', system-ui, sans-serif;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #5D5CDE 0%, #0463FA 50%, #4ECDC4 100%);
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, #5D5CDE, #0463FA);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .dark .glass-effect {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .tab-active {
+            background: linear-gradient(135deg, #5D5CDE, #0463FA);
+            color: white;
+        }
+        
+        .priority-normal { border-left: 4px solid #4ECDC4; }
+        .priority-warning { border-left: 4px solid #FFA726; }
+        .priority-urgent { border-left: 4px solid #F44336; }
+        
+        .diagnosis-positive { border-left: 4px solid #F44336; }
+        .diagnosis-negative { border-left: 4px solid #4ECDC4; }
+        
+        .navbar-blur {
+            backdrop-filter: blur(10px);
+            background-color: rgba(255, 255, 255, 0.95);
+        }
+        
+        .dark .navbar-blur {
+            background-color: rgba(0, 0, 0, 0.95);
+        }
+        
+        .loading-overlay {
+            backdrop-filter: blur(2px);
+        }
+        
+        .btn-shine {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-shine::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.6s;
+        }
+        
+        .btn-shine:hover::before {
+            left: 100%;
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .slide-in-right {
+            animation: slideInRight 0.3s ease-out;
+        }
+        
+        @keyframes slideInRight {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+        
+     .analysis-image {
+    width: 150px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 2px solid #e5e7eb;
+    transition: transform 0.3s ease;
+}
+
+.dark .analysis-image {
+    border-color: #4b5563;
+}
+
+.analysis-image:hover {
+    transform: scale(1.05);
+}
+
+.analysis-image.loading {
+    opacity: 0.7;
+    background: #f3f4f6;
+}
+
+.dark .analysis-image.loading {
+    background: #374151;
+}
+    </style>
+</head>
+
+<body class="bg-gray-50 dark:bg-gray-900 font-arabic">
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="fixed inset-0 z-50 hidden loading-overlay bg-white bg-opacity-80 dark:bg-gray-900 dark:bg-opacity-80">
+        <div class="flex items-center justify-center h-full">
+            <div class="text-center">
+                <div class="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                <p class="text-gray-600 dark:text-gray-300">جارٍ التحميل...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-40 navbar-blur transition-all duration-300">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo & Title -->
+                <div class="flex items-center space-x-4 space-x-reverse">
+                    <div class="w-10 h-10 gradient-bg rounded-lg flex items-center justify-center">
+                        <i class="fas fa-stethoscope text-white"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-lg font-bold gradient-text">منصة الأطباء</h1>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">إدارة المرضى والتقارير الطبية</p>
+                    </div>
+                </div>
+
+                <!-- Doctor Info & Actions -->
+                <div class="flex items-center space-x-4 space-x-reverse">
+                    <div class="hidden md:flex items-center space-x-3 space-x-reverse">
+                        <div class="text-right">
+                            <p class="text-sm font-semibold text-gray-800 dark:text-white" id="doctorName">د. محمد أحمد</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">طبيب القلب</p>
+                        </div>
+                        <div class="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
+                            <i class="fas fa-user-md text-white"></i>
+                        </div>
+                    </div>
+                    
+                    <button id="logoutBtn" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300 btn-shine">
+                        <i class="fas fa-sign-out-alt ml-1"></i>
+                        خروج
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="pt-16 min-h-screen">
+        <!-- Dashboard Header -->
+        <div class="bg-white dark:bg-gray-800 shadow-sm">
+            <div class="container mx-auto px-4 py-6">
+                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                    <div>
+                        <h2 class="text-3xl font-bold text-gray-800 dark:text-white">لوحة تحكم الطبيب</h2>
+                        <p class="text-gray-600 dark:text-gray-300">إدارة المرضى والتحليلات والتقارير الطبية</p>
+                    </div>
+                    
+                    <!-- Quick Stats -->
+                    <div class="grid grid-cols-2 lg:grid-cols-5 gap-4">
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-primary" id="totalPatients">0</div>
+                            <div class="text-sm text-gray-600 dark:text-gray-400">المرضى</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-secondary" id="totalAnalyses">0</div>
+                            <div class="text-sm text-gray-600 dark:text-gray-400">التحليلات</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-accent" id="positiveAnalyses">0</div>
+                            <div class="text-sm text-gray-600 dark:text-gray-400">إيجابية</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-warning" id="totalReports">0</div>
+                            <div class="text-sm text-gray-600 dark:text-gray-400">التقارير</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-urgent" id="urgentReports">0</div>
+                            <div class="text-sm text-gray-600 dark:text-gray-400">العاجلة</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Navigation -->
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex flex-wrap gap-2">
+                <button class="tab-btn tab-active px-6 py-3 rounded-lg font-semibold transition-all duration-300" data-tab="patients">
+                    <i class="fas fa-users ml-2"></i>المرضى
+                </button>
+                <button class="tab-btn px-6 py-3 rounded-lg font-semibold transition-all duration-300 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700" data-tab="medical-analyses">
+                    <i class="fas fa-x-ray ml-2"></i>التحليلات الطبية
+                </button>
+                <button class="tab-btn px-6 py-3 rounded-lg font-semibold transition-all duration-300 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700" data-tab="create-report">
+                    <i class="fas fa-plus-circle ml-2"></i>تقرير جديد
+                </button>
+                <button class="tab-btn px-6 py-3 rounded-lg font-semibold transition-all duration-300 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700" data-tab="reports">
+                    <i class="fas fa-file-medical-alt ml-2"></i>إدارة التقارير
+                </button>
+
+            </div>
+        </div>
+
+        <!-- Tab Content -->
+        <div class="container mx-auto px-4 pb-8">
+            <!-- Patients Tab -->
+            <div id="patientsTab" class="tab-content">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg">
+                    <!-- Search & Filters -->
+                    <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                            <div class="flex-1 max-w-md">
+                                <div class="relative">
+                                    <input type="text" id="patientSearch" placeholder="بحث في المرضى..." class="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-800 dark:text-white text-base">
+                                    <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                </div>
+                            </div>
+                            <button id="refreshPatientsBtn" class="bg-primary hover:bg-purple-600 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 btn-shine">
+                                <i class="fas fa-sync-alt ml-2"></i>تحديث
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Patients List -->
+                    <div class="p-6">
+                        <div id="patientsGrid" class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                            <!-- Patient cards will be populated here -->
+                        </div>
+                        
+                        <!-- Empty State -->
+                        <div id="patientsEmptyState" class="hidden text-center py-12">
+                            <i class="fas fa-users text-6xl text-gray-300 dark:text-gray-600 mb-4"></i>
+                            <h3 class="text-xl font-semibold text-gray-600 dark:text-gray-400 mb-2">لا توجد مرضى</h3>
+                            <p class="text-gray-500 dark:text-gray-500">لم يتم العثور على أي مرضى</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Medical Analyses Tab -->
+            <div id="medical-analysesTab" class="tab-content hidden">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg">
+                    <!-- Analyses Header -->
+                    <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                            <div>
+                                <h3 class="text-2xl font-bold text-gray-800 dark:text-white">التحليلات الطبية</h3>
+                                <p class="text-gray-600 dark:text-gray-300">جميع تحليلات الصور الطبية للمرضى</p>
+                            </div>
+                            <div class="flex gap-2">
+                                <select id="analysisFilter" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white text-base">
+                                    <option value="">جميع التحليلات</option>
+                                    <option value="cardiomegaly">تضخم عضلة القلب</option>
+                                    <option value="normal">طبيعي</option>
+                                </select>
+                                <button id="refreshAnalysesBtn" class="bg-primary hover:bg-purple-600 text-white px-6 py-2 rounded-lg font-semibold transition-all duration-300 btn-shine">
+                                    <i class="fas fa-sync-alt ml-2"></i>تحديث
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Analyses List -->
+                    <div class="p-6">
+                        <div id="analysesContainer" class="space-y-4">
+                            <!-- Analyses will be populated here -->
+                        </div>
+                        
+                        <!-- Empty State -->
+                        <div id="analysesEmptyState" class="hidden text-center py-12">
+                            <i class="fas fa-x-ray text-6xl text-gray-300 dark:text-gray-600 mb-4"></i>
+                            <h3 class="text-xl font-semibold text-gray-600 dark:text-gray-400 mb-2">لا توجد تحليلات</h3>
+                            <p class="text-gray-500 dark:text-gray-500">لم يتم العثور على أي تحليلات طبية</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Create Report Tab -->
+            <div id="create-reportTab" class="tab-content hidden">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg">
+                    <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                        <h3 class="text-2xl font-bold text-gray-800 dark:text-white">إنشاء تقرير طبي جديد</h3>
+                        <p class="text-gray-600 dark:text-gray-300">قم بإنشاء تقرير مفصل للمريض بناءً على التحليلات</p>
+                    </div>
+
+                    <form id="createReportForm" class="p-6">
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <!-- Patient Selection -->
+                            <div class="lg:col-span-2">
+                                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">المريض *</label>
+                                <select id="reportPatientSelect" required class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-800 dark:text-white text-base">
+                                    <option value="">اختر المريض...</option>
+                                </select>
+                            </div>
+
+                            <!-- Patient Analysis Display -->
+                            <div id="patientAnalysisPreview" class="lg:col-span-2 hidden bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
+                                <h4 class="font-semibold text-gray-800 dark:text-white mb-3">تحليلات المريض الأخيرة:</h4>
+                                <div id="patientAnalysisList" class="space-y-2">
+                                    <!-- Patient analyses will be shown here -->
+                                </div>
+                            </div>
+
+                            <!-- Report Title -->
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">عنوان التقرير *</label>
+                                <input type="text" id="reportTitle" required placeholder="عنوان التقرير..." class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-800 dark:text-white text-base">
+                            </div>
+
+                            <!-- Priority -->
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">الأولوية *</label>
+                                <select id="reportPriority" required class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-800 dark:text-white text-base">
+                                    <option value="normal">عادي</option>
+                                    <option value="warning">تحذيري</option>
+                                    <option value="urgent">عاجل</option>
+                                </select>
+                            </div>
+
+                            <!-- Specialty -->
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">التخصص</label>
+                                <input type="text" id="reportSpecialty" placeholder="التخصص الطبي..." value="أمراض القلب والأوعية الدموية" class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-800 dark:text-white text-base">
+                            </div>
+
+                            <!-- Hospital -->
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">المستشفى</label>
+                                <input type="text" id="reportHospital" placeholder="اسم المستشفى..." class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-800 dark:text-white text-base">
+                            </div>
+
+                            <!-- Summary -->
+                            <div class="lg:col-span-2">
+                                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">ملخص التقرير *</label>
+                                <textarea id="reportSummary" required rows="3" placeholder="ملخص موجز للحالة والتشخيص..." class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-800 dark:text-white text-base resize-none"></textarea>
+                            </div>
+
+                            <!-- Content -->
+                            <div class="lg:col-span-2">
+                                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">محتوى التقرير المفصل *</label>
+                                <textarea id="reportContent" required rows="6" placeholder="التقرير الطبي المفصل، نتائج الفحوصات، والتشخيص..." class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-800 dark:text-white text-base resize-none"></textarea>
+                            </div>
+
+                            <!-- Recommendations -->
+                            <div class="lg:col-span-2">
+                                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">التوصيات والعلاج</label>
+                                <textarea id="reportRecommendations" rows="4" placeholder="التوصيات العلاجية والإرشادات للمريض..." class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-800 dark:text-white text-base resize-none"></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="flex flex-col sm:flex-row gap-4 mt-8">
+                            <button type="submit" class="bg-primary hover:bg-purple-600 text-white px-8 py-3 rounded-lg font-semibold transition-all duration-300 btn-shine">
+                                <i class="fas fa-save ml-2"></i>حفظ التقرير
+                            </button>
+                            <button type="reset" class="bg-gray-500 hover:bg-gray-600 text-white px-8 py-3 rounded-lg font-semibold transition-all duration-300">
+                                <i class="fas fa-eraser ml-2"></i>مسح البيانات
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Reports Management Tab -->
+            <div id="reportsTab" class="tab-content hidden">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg">
+                    <!-- Reports Header -->
+                    <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                            <div>
+                                <h3 class="text-2xl font-bold text-gray-800 dark:text-white">إدارة التقارير الطبية</h3>
+                                <p class="text-gray-600 dark:text-gray-300">عرض وإدارة جميع التقارير الطبية</p>
+                            </div>
+                            <button id="refreshReportsBtn" class="bg-primary hover:bg-purple-600 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 btn-shine">
+                                <i class="fas fa-sync-alt ml-2"></i>تحديث
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Reports List -->
+                    <div class="p-6">
+                        <div id="reportsContainer" class="space-y-4">
+                            <!-- Reports will be populated here -->
+                        </div>
+                        
+                        <!-- Empty State -->
+                        <div id="reportsEmptyState" class="hidden text-center py-12">
+                            <i class="fas fa-file-medical text-6xl text-gray-300 dark:text-gray-600 mb-4"></i>
+                            <h3 class="text-xl font-semibold text-gray-600 dark:text-gray-400 mb-2">لا توجد تقارير</h3>
+                            <p class="text-gray-500 dark:text-gray-500">لم يتم إنشاء أي تقارير بعد</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+
+    <!-- Patient Details Modal -->
+    <div id="patientModal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black bg-opacity-50" id="patientModalBackdrop"></div>
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden transform transition-all duration-300 scale-95" id="patientModalContent">
+                <div class="p-6 h-full overflow-y-auto">
+                    <!-- Modal Header -->
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-2xl font-bold text-gray-800 dark:text-white">تفاصيل المريض وتحليلاته</h3>
+                        <button id="closePatientModal" class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+
+                    <!-- Patient Details -->
+                    <div id="patientDetails" class="mb-8">
+                        <!-- Patient info will be populated here -->
+                    </div>
+
+                    <!-- Patient Analyses -->
+                    <div id="patientAnalysesSection">
+                        <h4 class="text-xl font-semibold text-gray-800 dark:text-white mb-4">تحليلات المريض الطبية</h4>
+                        <div id="patientAnalysesContainer" class="space-y-4">
+                            <!-- Patient analyses will be populated here -->
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex gap-4 mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+                        <button id="createReportForPatient" class="bg-primary hover:bg-purple-600 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 btn-shine">
+                            <i class="fas fa-file-medical ml-2"></i>إنشاء تقرير جديد
+                        </button>
+                        <button id="viewPatientReports" class="bg-secondary hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300">
+                            <i class="fas fa-history ml-2"></i>عرض التقارير السابقة
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Details Modal -->
+    <div id="reportModal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black bg-opacity-50" id="reportModalBackdrop"></div>
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden" id="reportModalContent">
+                <div class="p-6 h-full overflow-y-auto">
+                    <!-- Modal Header -->
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-2xl font-bold text-gray-800 dark:text-white">تفاصيل التقرير الطبي</h3>
+                        <button id="closeReportModal" class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+
+                    <!-- Report Details -->
+                    <div id="reportDetails" class="space-y-6">
+                        <!-- Report content will be populated here -->
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex flex-wrap gap-4 mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+                        <button id="editReportBtn" class="bg-warning hover:bg-yellow-600 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300">
+                            <i class="fas fa-edit ml-2"></i>تعديل
+                        </button>
+                        <button id="deleteReportBtn" class="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300">
+                            <i class="fas fa-trash ml-2"></i>حذف
+                        </button>
+                        <button id="printReportBtn" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300">
+                            <i class="fas fa-print ml-2"></i>طباعة
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analysis Details Modal -->
+    <div id="analysisModal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black bg-opacity-50" id="analysisModalBackdrop"></div>
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden" id="analysisModalContent">
+                <div class="p-6 h-full overflow-y-auto">
+                    <!-- Modal Header -->
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-2xl font-bold text-gray-800 dark:text-white">تفاصيل التحليل الطبي</h3>
+                        <button id="closeAnalysisModal" class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+
+                    <!-- Analysis Details -->
+                    <div id="analysisDetails" class="space-y-6">
+                        <!-- Analysis content will be populated here -->
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex gap-4 mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+                        <button id="createReportFromAnalysis" class="bg-primary hover:bg-purple-600 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 btn-shine">
+                            <i class="fas fa-file-medical ml-2"></i>إنشاء تقرير بناءً على هذا التحليل
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Full-Screen Image Modal -->
+    <div id="imageModal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black bg-opacity-90" id="imageModalBackdrop"></div>
+        <div class="flex items-center justify-center h-full">
+            <img id="fullScreenImage" src="" class="max-h-[90vh] max-w-[90vw] object-contain">
+            <button id="closeImageModal" class="absolute top-4 right-4 text-white text-3xl font-bold">&times;</button>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toastContainer" class="fixed top-20 left-4 z-50 space-y-2">
+        <!-- Toasts will be added here -->
+    </div>
+
+    <script>
+        class DoctorPlatformApp {
+            constructor() {
+                this.API_BASE = 'http://localhost:8000';
+                this.currentTab = 'patients';
+                this.selectedPatient = null;
+                this.selectedReport = null;
+                this.selectedAnalysis = null;
+                this.patients = [];
+                this.reports = [];
+                this.analyses = [];
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+                this.loadInitialData();
+                this.checkAuth();
+            }
+
+            checkAuth() {
+                const token = localStorage.getItem('token');
+                const userData = localStorage.getItem('userData');
+                
+                if (!token || !userData) {
+                    this.showCustomAlert('يجب تسجيل الدخول أولاً', () => {
+                        window.location.href = 'Doctor_login.html';
+                    });
+                    return;
+                }
+
+                try {
+                    const user = JSON.parse(userData);
+                    document.getElementById('doctorName').textContent = `د. ${user.name}`;
+                } catch (error) {
+                    console.error('Error parsing user data:', error);
+                }
+            }
+// إضافة دالة لمعالجة أخطاء تحميل الصور
+handleImageError(event) {
+    event.target.src = 'https://via.placeholder.com/150x120?text=صورة+غير+متوفرة';
+    event.target.classList.add('loading');
+}
+
+// إضافة مستمع للأحداث في الدالة init()
+init() {
+    this.setupEventListeners();
+    this.loadInitialData();
+    this.checkAuth();
+    
+    // إضافة مستمع لأخطاء الصور
+    document.addEventListener('error', (e) => {
+        if (e.target.tagName === 'IMG' && e.target.classList.contains('analysis-image')) {
+            this.handleImageError(e);
+        }
+    }, true);
+}
+
+            setupEventListeners() {
+                // Tab navigation
+                document.querySelectorAll('.tab-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const tab = e.target.closest('.tab-btn').dataset.tab;
+                        this.switchTab(tab);
+                    });
+                });
+
+                // Search functionality
+                document.getElementById('patientSearch').addEventListener('input', (e) => {
+                    this.searchPatients(e.target.value);
+                });
+
+                // Analysis filter
+                document.getElementById('analysisFilter').addEventListener('change', (e) => {
+                    this.filterAnalyses(e.target.value);
+                });
+
+                // Refresh buttons
+                document.getElementById('refreshPatientsBtn').addEventListener('click', () => {
+                    this.loadPatients();
+                });
+                document.getElementById('refreshReportsBtn').addEventListener('click', () => {
+                    this.loadReports();
+                });
+                document.getElementById('refreshAnalysesBtn').addEventListener('click', () => {
+                    this.loadAnalyses();
+                });
+
+                // Form submission
+                document.getElementById('createReportForm').addEventListener('submit', (e) => {
+                    this.handleCreateReport(e);
+                });
+
+                // Patient selection change
+                document.getElementById('reportPatientSelect').addEventListener('change', (e) => {
+                    this.loadPatientAnalyses(e.target.value);
+                });
+
+                // Modal controls
+                this.setupModalListeners();
+
+                // Logout
+                document.getElementById('logoutBtn').addEventListener('click', () => {
+                    this.logout();
+                });
+            }
+
+            setupModalListeners() {
+                // Patient modal
+                document.getElementById('closePatientModal').addEventListener('click', () => {
+                    this.hideModal('patientModal');
+                });
+                document.getElementById('patientModalBackdrop').addEventListener('click', () => {
+                    this.hideModal('patientModal');
+                });
+
+                // Report modal
+                document.getElementById('closeReportModal').addEventListener('click', () => {
+                    this.hideModal('reportModal');
+                });
+                document.getElementById('reportModalBackdrop').addEventListener('click', () => {
+                    this.hideModal('reportModal');
+                });
+
+                // Analysis modal
+                document.getElementById('closeAnalysisModal').addEventListener('click', () => {
+                    this.hideModal('analysisModal');
+                });
+                document.getElementById('analysisModalBackdrop').addEventListener('click', () => {
+                    this.hideModal('analysisModal');
+                });
+
+                // Patient modal actions
+                document.getElementById('createReportForPatient').addEventListener('click', () => {
+                    this.createReportForSelectedPatient();
+                });
+
+                // Report modal actions
+                document.getElementById('deleteReportBtn').addEventListener('click', () => {
+                    this.deleteSelectedReport();
+                });
+
+                // Analysis modal actions
+                document.getElementById('createReportFromAnalysis').addEventListener('click', () => {
+                    this.createReportFromSelectedAnalysis();
+                });
+            }
+
+            async loadInitialData() {
+                this.showLoading();
+                try {
+                    await Promise.all([
+                        this.loadPatients(),
+                        this.loadAnalyses(),
+                        this.loadStats(),
+                        this.loadPatientsForSelect()
+                    ]);
+                } catch (error) {
+                    this.showError('فشل في تحميل البيانات');
+                } finally {
+                    this.hideLoading();
+                }
+            }
+
+            async loadPatients() {
+                try {
+                    const response = await fetch(`${this.API_BASE}/api/doctor/patients/`, {
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        }
+                    });
+
+                    if (response.ok) {
+                        this.patients = await response.json();
+                        this.renderPatients(this.patients);
+                    } else {
+                        throw new Error('فشل في تحميل المرضى');
+                    }
+                } catch (error) {
+                    this.showError('فشل في تحميل قائمة المرضى');
+                }
+            }
+
+         async loadAnalyses() {
+    try {
+        const response = await fetch(`${this.API_BASE}/api/doctor/results/`, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+
+        if (response.ok) {
+            const analysesData = await response.json();
+            this.analyses = analysesData.map(analysis => ({
+                id: analysis.id,
+                original_filename: analysis.original_filename,
+                diagnosis: analysis.diagnosis,
+                confidence: analysis.confidence,
+                created_at: analysis.created_at,
+                user_name: analysis.user_name,
+                user_email: analysis.user_email,
+                // Use full URL including API_BASE
+                image_url: `${this.API_BASE}/api/doctor/results/${analysis.id}/image`
+            }));
+            this.renderAnalyses(this.analyses);
+        } else {
+            throw new Error('فشل في تحميل التحليلات');
+        }
+    } catch (error) {
+        this.showError('فشل في تحميل التحليلات الطبية');
+    }
+}
+
+            async loadPatientsForSelect() {
+                try {
+                    const response = await fetch(`${this.API_BASE}/api/doctor/patients/`, {
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        }
+                    });
+
+                    if (response.ok) {
+                        const patients = await response.json();
+                        const select = document.getElementById('reportPatientSelect');
+                        select.innerHTML = '<option value="">اختر المريض...</option>';
+                        
+                        patients.forEach(patient => {
+                            const option = document.createElement('option');
+                            option.value = patient.id;
+                            option.textContent = `${patient.name} - ${patient.email}`;
+                            select.appendChild(option);
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error loading patients for select:', error);
+                }
+            }
+
+            async loadPatientAnalyses(patientId) {
+                if (!patientId) {
+                    document.getElementById('patientAnalysisPreview').classList.add('hidden');
+                    return;
+                }
+
+                try {
+                    const patientAnalyses = this.analyses.filter(analysis => 
+                        analysis.user_email && this.patients.find(p => p.id == patientId && p.email === analysis.user_email)
+                    );
+
+                    if (patientAnalyses.length > 0) {
+                        this.renderPatientAnalysisPreview(patientAnalyses);
+                        document.getElementById('patientAnalysisPreview').classList.remove('hidden');
+                    } else {
+                        document.getElementById('patientAnalysisPreview').classList.add('hidden');
+                    }
+                } catch (error) {
+                    console.error('Error loading patient analyses:', error);
+                }
+            }
+
+            renderPatientAnalysisPreview(analyses) {
+                const container = document.getElementById('patientAnalysisList');
+                container.innerHTML = analyses.slice(0, 3).map(analysis => `
+                    <div class="flex items-center gap-3 p-2 bg-white dark:bg-gray-700 rounded">
+                        <span class="w-3 h-3 rounded-full ${analysis.diagnosis === 'cardiomegaly' ? 'bg-red-500' : 'bg-green-500'}"></span>
+                        <span class="text-sm">${analysis.original_filename}</span>
+                        <span class="text-xs text-gray-500">${analysis.diagnosis === 'cardiomegaly' ? 'تضخم عضلة القلب' : 'طبيعي'}</span>
+                        <span class="text-xs text-gray-500">${analysis.confidence.toFixed(1)}%</span>
+                    </div>
+                `).join('');
+
+                if (analyses.length > 3) {
+                    container.innerHTML += `<p class="text-sm text-gray-500">+${analyses.length - 3} تحليل إضافي</p>`;
+                }
+            }
+
+            async loadStats() {
+                try {
+                    const [patientsResponse, analysesResponse] = await Promise.all([
+                        fetch(`${this.API_BASE}/api/doctor/patients/stats/`, {
+                            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                        }),
+                        fetch(`${this.API_BASE}/api/doctor/results/`, {
+                            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                        })
+                    ]);
+
+                    if (patientsResponse.ok && analysesResponse.ok) {
+                        const patientsStats = await patientsResponse.json();
+                        const analysesData = await analysesResponse.json();
+                        
+                        const positiveAnalyses = analysesData.filter(a => a.diagnosis === 'cardiomegaly').length;
+                        
+                        this.updateStatsDisplay({
+                            ...patientsStats,
+                            total_analyses: analysesData.length,
+                            positive_analyses: positiveAnalyses
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error loading stats:', error);
+                }
+            }
+
+            async loadReports() {
+                try {
+                    const response = await fetch(`${this.API_BASE}/api/doctor/recent-reports/`, {
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        }
+                    });
+
+                    if (response.ok) {
+                        this.reports = await response.json();
+                        this.renderReports(this.reports);
+                    } else {
+                        throw new Error('فشل في تحميل التقارير');
+                    }
+                } catch (error) {
+                    this.showError('فشل في تحميل التقارير');
+                }
+            }
+
+            updateStatsDisplay(stats) {
+                document.getElementById('totalPatients').textContent = stats.total_patients || 0;
+                document.getElementById('totalAnalyses').textContent = stats.total_analyses || 0;
+                document.getElementById('positiveAnalyses').textContent = stats.positive_analyses || 0;
+                document.getElementById('totalReports').textContent = stats.total_reports || 0;
+                document.getElementById('urgentReports').textContent = stats.urgent_reports || 0;
+            }
+
+            renderPatients(patients) {
+                const container = document.getElementById('patientsGrid');
+                const emptyState = document.getElementById('patientsEmptyState');
+
+                if (patients.length === 0) {
+                    container.innerHTML = '';
+                    emptyState.classList.remove('hidden');
+                    return;
+                }
+
+                emptyState.classList.add('hidden');
+                container.innerHTML = patients.map(patient => {
+                    const patientAnalyses = this.analyses.filter(analysis => 
+                        analysis.user_email === patient.email
+                    );
+
+                    return `
+                        <div class="bg-white dark:bg-gray-700 rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow cursor-pointer" onclick="app.showPatientDetails(${patient.id})">
+                            <div class="flex items-center gap-4 mb-4">
+                                <div class="w-12 h-12 bg-primary rounded-full flex items-center justify-center">
+                                    <i class="fas fa-user text-white"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <h4 class="font-semibold text-gray-800 dark:text-white">${patient.name}</h4>
+                                    <p class="text-sm text-gray-600 dark:text-gray-300">${patient.email}</p>
+                                </div>
+                                ${patientAnalyses.length > 0 ? `<span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-1 rounded-full">${patientAnalyses.length} تحليل</span>` : ''}
+                            </div>
+                            
+                            <div class="space-y-2 text-sm">
+                                ${patient.phone ? `<p class="text-gray-600 dark:text-gray-300"><i class="fas fa-phone w-4"></i> ${patient.phone}</p>` : ''}
+                                ${patient.gender ? `<p class="text-gray-600 dark:text-gray-300"><i class="fas fa-venus-mars w-4"></i> ${patient.gender === 'male' ? 'ذكر' : 'أنثى'}</p>` : ''}
+                                ${patient.birth_date ? `<p class="text-gray-600 dark:text-gray-300"><i class="fas fa-birthday-cake w-4"></i> ${new Date(patient.birth_date).toLocaleDateString('ar')}</p>` : ''}
+                            </div>
+                            
+                            <div class="flex gap-2 mt-4">
+                                <button class="flex-1 bg-primary hover:bg-purple-600 text-white px-4 py-2 rounded text-sm font-semibold transition-colors" onclick="event.stopPropagation(); app.createReportForPatient(${patient.id})">
+                                    <i class="fas fa-file-medical ml-1"></i> تقرير جديد
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+         renderAnalyses(analyses) {
+    const container = document.getElementById('analysesContainer');
+    const emptyState = document.getElementById('analysesEmptyState');
+
+    if (analyses.length === 0) {
+        container.innerHTML = '';
+        emptyState.classList.remove('hidden');
+        return;
+    }
+
+    emptyState.classList.add('hidden');
+    container.innerHTML = analyses.map(analysis => `
+        <div class="bg-white dark:bg-gray-700 rounded-lg shadow-md p-6 ${analysis.diagnosis === 'cardiomegaly' ? 'diagnosis-positive' : 'diagnosis-negative'} hover:shadow-lg transition-shadow">
+            <div class="flex flex-col lg:flex-row lg:items-center gap-4">
+                <!-- صورة التحليل -->
+                <div class="flex-shrink-0">
+                    <img src="${this.API_BASE}/api/doctor/results/${analysis.id}/image"
+                         alt="${analysis.original_filename}" 
+                         class="analysis-image rounded-lg border border-gray-200 dark:border-gray-600"
+                         onerror="this.src='https://via.placeholder.com/150x120?text=صورة+غير+متوفرة'">
+                </div>
+                
+                <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-2">
+                        <h4 class="font-semibold text-gray-800 dark:text-white">${analysis.original_filename}</h4>
+                        <span class="px-2 py-1 text-xs font-semibold rounded-full ${analysis.diagnosis === 'cardiomegaly' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300' : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'}">
+                            ${analysis.diagnosis === 'cardiomegaly' ? 'تضخم عضلة القلب' : 'طبيعي'}
+                        </span>
+                    </div>
+                    
+                    <!-- معلومات المستخدم -->
+                    <div class="mb-3">
+                        <p class="text-gray-600 dark:text-gray-300 font-medium">
+                            <i class="fas fa-user ml-2"></i>
+                            المريض: ${analysis.user_name || 'غير محدد'}
+                        </p>
+                        <p class="text-gray-500 dark:text-gray-400 text-sm">
+                            <i class="fas fa-envelope ml-2"></i>
+                            ${analysis.user_email || 'غير محدد'}
+                        </p>
+                    </div>
+                    
+                    <div class="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+                        <span><i class="fas fa-percentage ml-1"></i>دقة التشخيص: ${analysis.confidence.toFixed(1)}%</span>
+                        <span><i class="fas fa-calendar ml-1"></i>${new Date(analysis.created_at).toLocaleDateString('ar')}</span>
+                        <span><i class="fas fa-clock ml-1"></i>${new Date(analysis.created_at).toLocaleTimeString('ar', {hour: '2-digit', minute: '2-digit'})}</span>
+                    </div>
+                </div>
+                
+                <div class="flex gap-2">
+                    <button class="bg-primary hover:bg-purple-600 text-white px-4 py-2 rounded text-sm font-semibold transition-colors" onclick="app.createReportFromAnalysis(${analysis.id})">
+                        <i class="fas fa-file-medical ml-1"></i> إنشاء تقرير
+                    </button>
+                    <button class="bg-secondary hover:bg-blue-600 text-white px-4 py-2 rounded text-sm font-semibold transition-colors" onclick="app.showAnalysisDetails(${analysis.id})">
+                        <i class="fas fa-eye ml-1"></i> عرض التفاصيل
+                    </button>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+            renderReports(reports) {
+                const container = document.getElementById('reportsContainer');
+                const emptyState = document.getElementById('reportsEmptyState');
+
+                if (reports.length === 0) {
+                    container.innerHTML = '';
+                    emptyState.classList.remove('hidden');
+                    return;
+                }
+
+                emptyState.classList.add('hidden');
+                container.innerHTML = reports.map(report => `
+                    <div class="bg-white dark:bg-gray-700 rounded-lg shadow-md p-6 priority-${report.priority} hover:shadow-lg transition-shadow cursor-pointer" onclick="app.showReportDetails(${report.id})">
+                        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <h4 class="font-semibold text-gray-800 dark:text-white">${report.title}</h4>
+                                    <span class="px-2 py-1 text-xs font-semibold rounded-full ${this.getPriorityClass(report.priority)}">
+                                        ${this.getPriorityText(report.priority)}
+                                    </span>
+                                </div>
+                                <p class="text-gray-600 dark:text-gray-300 mb-2">${report.patient_name} - ${report.patient_email}</p>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">${report.summary.substring(0, 100)}...</p>
+                            </div>
+                            
+                            <div class="flex flex-col lg:text-left text-sm text-gray-500 dark:text-gray-400">
+                                <p>د. ${report.doctor_name}</p>
+                                <p>${new Date(report.created_at).toLocaleDateString('ar')} ${new Date(report.created_at).toLocaleTimeString('ar')}</p>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            getPriorityClass(priority) {
+                const classes = {
+                    'normal': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
+                    'warning': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
+                    'urgent': 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
+                };
+                return classes[priority] || classes['normal'];
+            }
+
+            getPriorityText(priority) {
+                const texts = {
+                    'normal': 'عادي',
+                    'warning': 'تحذيري',
+                    'urgent': 'عاجل'
+                };
+                return texts[priority] || 'عادي';
+            }
+
+            async showPatientDetails(patientId) {
+                try {
+                    const response = await fetch(`${this.API_BASE}/api/doctor/patients/${patientId}/`, {
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        }
+                    });
+
+                    if (response.ok) {
+                        const patient = await response.json();
+                        this.selectedPatient = patient;
+                        this.renderPatientDetails(patient);
+                        this.renderPatientAnalyses(patient);
+                        this.showModal('patientModal');
+                    } else {
+                        throw new Error('فشل في تحميل تفاصيل المريض');
+                    }
+                } catch (error) {
+                    this.showError('فشل في تحميل تفاصيل المريض');
+                }
+            }
+
+            renderPatientDetails(patient) {
+                const container = document.getElementById('patientDetails');
+                container.innerHTML = `
+                    <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-600 dark:text-gray-400">الاسم</label>
+                                <p class="text-gray-800 dark:text-white">${patient.name}</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-600 dark:text-gray-400">البريد الإلكتروني</label>
+                                <p class="text-gray-800 dark:text-white">${patient.email}</p>
+                            </div>
+                            ${patient.phone ? `
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-600 dark:text-gray-400">رقم الهاتف</label>
+                                <p class="text-gray-800 dark:text-white">${patient.phone}</p>
+                            </div>
+                            ` : ''}
+                            ${patient.birth_date ? `
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-600 dark:text-gray-400">تاريخ الميلاد</label>
+                                <p class="text-gray-800 dark:text-white">${new Date(patient.birth_date).toLocaleDateString('ar')}</p>
+                            </div>
+                            ` : ''}
+                            ${patient.gender ? `
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-600 dark:text-gray-400">الجنس</label>
+                                <p class="text-gray-800 dark:text-white">${patient.gender === 'male' ? 'ذكر' : 'أنثى'}</p>
+                            </div>
+                            ` : ''}
+                            ${patient.address ? `
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-semibold text-gray-600 dark:text-gray-400">العنوان</label>
+                                <p class="text-gray-800 dark:text-white">${patient.address}</p>
+                            </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            }
+
+            renderPatientAnalyses(patient) {
+                const container = document.getElementById('patientAnalysesContainer');
+                const patientAnalyses = this.analyses.filter(analysis => 
+                    analysis.user_email === patient.email
+                );
+
+                if (patientAnalyses.length === 0) {
+                    container.innerHTML = `
+                        <div class="text-center py-8 text-gray-500 dark:text-gray-400">
+                            <i class="fas fa-x-ray text-4xl mb-3"></i>
+                            <p>لا توجد تحليلات طبية لهذا المريض</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = patientAnalyses.map(analysis => `
+                    <div class="bg-white dark:bg-gray-600 rounded-lg p-4 ${analysis.diagnosis === 'cardiomegaly' ? 'border-l-4 border-red-500' : 'border-l-4 border-green-500'}">
+                        <div class="flex items-center justify-between mb-3">
+                            <h5 class="font-semibold text-gray-800 dark:text-white">${analysis.original_filename}</h5>
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full ${analysis.diagnosis === 'cardiomegaly' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}">
+                                ${analysis.diagnosis === 'cardiomegaly' ? 'تضخم عضلة القلب' : 'طبيعي'}
+                            </span>
+                        </div>
+                        <div class="flex items-center justify-between text-sm text-gray-600 dark:text-gray-300">
+                            <span>دقة التشخيص: ${analysis.confidence.toFixed(1)}%</span>
+                            <span>${new Date(analysis.created_at).toLocaleDateString('ar')} ${new Date(analysis.created_at).toLocaleTimeString('ar', {hour: '2-digit', minute: '2-digit'})}</span>
+                        </div>
+                        <div class="mt-3">
+                            <button class="bg-primary hover:bg-purple-600 text-white px-4 py-2 rounded text-sm font-semibold transition-colors" onclick="app.createReportFromAnalysis(${analysis.id})">
+                                <i class="fas fa-file-medical ml-1"></i> إنشاء تقرير بناءً على هذا التحليل
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            async showAnalysisDetails(analysisId) {
+                const analysis = this.analyses.find(a => a.id === analysisId);
+                if (!analysis) return;
+
+                this.selectedAnalysis = analysis;
+                this.renderAnalysisDetails(analysis);
+                this.showModal('analysisModal');
+            }
+
+         renderAnalysisDetails(analysis) {
+    const container = document.getElementById('analysisDetails');
+    container.innerHTML = `
+        <div class="space-y-6">
+            <!-- Analysis Header -->
+            <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                <div class="flex items-center justify-between mb-4">
+                    <h4 class="text-xl font-bold text-gray-800 dark:text-white">${analysis.original_filename}</h4>
+                    <span class="px-3 py-1 text-sm font-semibold rounded-full ${analysis.diagnosis === 'cardiomegaly' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}">
+                        ${analysis.diagnosis === 'cardiomegaly' ? 'تضخم عضلة القلب' : 'طبيعي'}
+                    </span>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <p><strong>المريض:</strong> ${analysis.user_name || 'غير محدد'}</p>
+                    <p><strong>البريد الإلكتروني:</strong> ${analysis.user_email || 'غير محدد'}</p>
+                    <p><strong>دقة التشخيص:</strong> ${analysis.confidence.toFixed(1)}%</p>
+                    <p><strong>تاريخ التحليل:</strong> ${new Date(analysis.created_at).toLocaleDateString('ar')} ${new Date(analysis.created_at).toLocaleTimeString('ar')}</p>
+                </div>
+            </div>
+
+            <!-- Analysis Image with larger display -->
+            <div>
+                <h5 class="text-lg font-semibold text-gray-800 dark:text-white mb-3">الصورة الطبية</h5>
+                <div class="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-4 flex justify-center">
+                    <img src="${this.API_BASE}${analysis.image_url}" 
+                         alt="${analysis.original_filename}" 
+                         class="max-w-full max-h-96 object-contain rounded-lg"
+                         onerror="this.src='https://via.placeholder.com/400x300?text=صورة+غير+متوفرة'">
+                </div>
+            </div>
+
+            <!-- Analysis Results -->
+            <div>
+                <h5 class="text-lg font-semibold text-gray-800 dark:text-white mb-3">نتيجة التحليل</h5>
+                <div class="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-4">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-4 h-4 rounded-full ${analysis.diagnosis === 'cardiomegaly' ? 'bg-red-500' : 'bg-green-500'}"></div>
+                        <span class="font-semibold text-gray-800 dark:text-white">
+                            ${analysis.diagnosis === 'cardiomegaly' ? 'تم اكتشاف تضخم في عضلة القلب' : 'عضلة القلب طبيعية'}
+                        </span>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-300">
+                        مستوى الثقة في التشخيص: ${analysis.confidence.toFixed(1)}%
+                    </p>
+                    ${analysis.diagnosis === 'cardiomegaly' ? `
+                    <div class="mt-3 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
+                        <p class="text-red-800 dark:text-red-300 text-sm">
+                            <i class="fas fa-exclamation-triangle ml-1"></i>
+                            يُنصح بمراجعة طبيب القلب للحصول على تقييم مفصل وخطة علاجية مناسبة.
+                        </p>
+                    </div>
+                    ` : `
+                    <div class="mt-3 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                        <p class="text-green-800 dark:text-green-300 text-sm">
+                            <i class="fas fa-check-circle ml-1"></i>
+                            النتيجة طبيعية، لا توجد علامات تضخم في عضلة القلب.
+                        </p>
+                    </div>
+                    `}
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+            async showReportDetails(reportId) {
+                try {
+                    const response = await fetch(`${this.API_BASE}/api/doctor/reports/${reportId}/`, {
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        }
+                    });
+
+                    if (response.ok) {
+                        const report = await response.json();
+                        this.selectedReport = report;
+                        this.renderReportDetails(report);
+                        this.showModal('reportModal');
+                    } else {
+                        throw new Error('فشل في تحميل تفاصيل التقرير');
+                    }
+                } catch (error) {
+                    this.showError('فشل في تحميل تفاصيل التقرير');
+                }
+            }
+
+            renderReportDetails(report) {
+                const container = document.getElementById('reportDetails');
+                container.innerHTML = `
+                    <div class="space-y-6">
+                        <!-- Report Header -->
+                        <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                            <div class="flex items-center justify-between mb-4">
+                                <h4 class="text-xl font-bold text-gray-800 dark:text-white">${report.title}</h4>
+                                <span class="px-3 py-1 text-sm font-semibold rounded-full ${this.getPriorityClass(report.priority)}">
+                                    ${this.getPriorityText(report.priority)}
+                                </span>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                <p><strong>المريض:</strong> ${report.patient_name}</p>
+                                <p><strong>الطبيب:</strong> ${report.doctor_name}</p>
+                                <p><strong>التاريخ:</strong> ${new Date(report.created_at).toLocaleDateString('ar')} ${new Date(report.created_at).toLocaleTimeString('ar')}</p>
+                                ${report.specialty ? `<p><strong>التخصص:</strong> ${report.specialty}</p>` : ''}
+                                ${report.hospital ? `<p><strong>المستشفى:</strong> ${report.hospital}</p>` : ''}
+                            </div>
+                        </div>
+
+                        <!-- Summary -->
+                        <div>
+                            <h5 class="text-lg font-semibold text-gray-800 dark:text-white mb-3">ملخص التقرير</h5>
+                            <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
+                                <p class="text-gray-700 dark:text-gray-300 leading-relaxed">${report.summary}</p>
+                            </div>
+                        </div>
+
+                        <!-- Content -->
+                        <div>
+                            <h5 class="text-lg font-semibold text-gray-800 dark:text-white mb-3">محتوى التقرير المفصل</h5>
+                            <div class="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-4">
+                                <p class="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">${report.content}</p>
+                            </div>
+                        </div>
+
+                        <!-- Recommendations -->
+                        ${report.recommendations ? `
+                        <div>
+                            <h5 class="text-lg font-semibold text-gray-800 dark:text-white mb-3">التوصيات والعلاج</h5>
+                            <div class="bg-green-50 dark:bg-green-900/20 rounded-lg p-4">
+                                <p class="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">${report.recommendations}</p>
+                            </div>
+                        </div>
+                        ` : ''}
+                    </div>
+                `;
+            }
+
+            createReportForPatient(patientId) {
+                const patient = this.patients.find(p => p.id === patientId);
+                if (patient) {
+                    document.getElementById('reportPatientSelect').value = patientId;
+                    this.loadPatientAnalyses(patientId);
+                    this.switchTab('create-report');
+                }
+            }
+
+            createReportForSelectedPatient() {
+                if (this.selectedPatient) {
+                    document.getElementById('reportPatientSelect').value = this.selectedPatient.id;
+                    this.loadPatientAnalyses(this.selectedPatient.id);
+                    this.hideModal('patientModal');
+                    this.switchTab('create-report');
+                }
+            }
+
+            createReportFromAnalysis(analysisId) {
+                const analysis = this.analyses.find(a => a.id === analysisId);
+                if (analysis) {
+                    const patient = this.patients.find(p => p.email === analysis.user_email);
+                    if (patient) {
+                        document.getElementById('reportPatientSelect').value = patient.id;
+                        this.loadPatientAnalyses(patient.id);
+                        
+                        // Pre-fill report fields based on analysis
+                        document.getElementById('reportTitle').value = `تقرير تحليل ${analysis.original_filename}`;
+                        document.getElementById('reportPriority').value = analysis.diagnosis === 'cardiomegaly' ? 'warning' : 'normal';
+                        document.getElementById('reportSummary').value = `نتيجة تحليل الصورة الطبية "${analysis.original_filename}": ${analysis.diagnosis === 'cardiomegaly' ? 'تم اكتشاف تضخم في عضلة القلب' : 'النتيجة طبيعية'} بدقة ${analysis.confidence.toFixed(1)}%.`;
+                        
+                        this.switchTab('create-report');
+                    }
+                }
+            }
+
+            createReportFromSelectedAnalysis() {
+                if (this.selectedAnalysis) {
+                    this.createReportFromAnalysis(this.selectedAnalysis.id);
+                    this.hideModal('analysisModal');
+                }
+            }
+
+            async handleCreateReport(e) {
+                e.preventDefault();
+                
+                const formData = {
+                    patient_id: parseInt(document.getElementById('reportPatientSelect').value),
+                    title: document.getElementById('reportTitle').value,
+                    priority: document.getElementById('reportPriority').value,
+                    summary: document.getElementById('reportSummary').value,
+                    content: document.getElementById('reportContent').value,
+                    recommendations: document.getElementById('reportRecommendations').value,
+                    specialty: document.getElementById('reportSpecialty').value,
+                    hospital: document.getElementById('reportHospital').value
+                };
+
+                if (!formData.patient_id) {
+                    this.showError('يرجى اختيار مريض');
+                    return;
+                }
+
+                try {
+                    this.showLoading();
+                    
+                    const response = await fetch(`${this.API_BASE}/api/doctor/reports/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        },
+                        body: JSON.stringify(formData)
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok) {
+                        this.showSuccess('تم إنشاء التقرير بنجاح');
+                        document.getElementById('createReportForm').reset();
+                        document.getElementById('patientAnalysisPreview').classList.add('hidden');
+                        this.switchTab('reports');
+                        this.loadReports();
+                        this.loadStats();
+                    } else {
+                        throw new Error(result.message || 'فشل في إنشاء التقرير');
+                    }
+                } catch (error) {
+                    this.showError(error.message || 'فشل في إنشاء التقرير');
+                } finally {
+                    this.hideLoading();
+                }
+            }
+
+            async deleteSelectedReport() {
+                if (!this.selectedReport) return;
+
+                this.showCustomConfirm('هل أنت متأكد من حذف هذا التقرير؟', async () => {
+                    try {
+                        const response = await fetch(`${this.API_BASE}/api/doctor/reports/${this.selectedReport.id}/`, {
+                            method: 'DELETE',
+                            headers: {
+                                'Authorization': `Bearer ${localStorage.getItem('token')}`
+                            }
+                        });
+
+                        const result = await response.json();
+
+                        if (result.success) {
+                            this.showSuccess('تم حذف التقرير بنجاح');
+                            this.hideModal('reportModal');
+                            this.loadReports();
+                            this.loadStats();
+                        } else {
+                            throw new Error(result.message || 'فشل في حذف التقرير');
+                        }
+                    } catch (error) {
+                        this.showError(error.message || 'فشل في حذف التقرير');
+                    }
+                });
+            }
+
+            searchPatients(query) {
+                if (!query) {
+                    this.renderPatients(this.patients);
+                    return;
+                }
+
+                const filtered = this.patients.filter(patient => 
+                    patient.name.toLowerCase().includes(query.toLowerCase()) ||
+                    patient.email.toLowerCase().includes(query.toLowerCase()) ||
+                    (patient.phone && patient.phone.includes(query))
+                );
+
+                this.renderPatients(filtered);
+            }
+
+            filterAnalyses(diagnosis) {
+                if (!diagnosis) {
+                    this.renderAnalyses(this.analyses);
+                    return;
+                }
+
+                const filtered = this.analyses.filter(analysis => analysis.diagnosis === diagnosis);
+                this.renderAnalyses(filtered);
+            }
+
+            switchTab(tabName) {
+                // Update tab buttons
+                document.querySelectorAll('.tab-btn').forEach(btn => {
+                    btn.classList.remove('tab-active');
+                    btn.classList.add('bg-white', 'dark:bg-gray-800', 'text-gray-700', 'dark:text-gray-300', 'hover:bg-gray-100', 'dark:hover:bg-gray-700');
+                });
+
+                const activeBtn = document.querySelector(`[data-tab="${tabName}"]`);
+                if (activeBtn) {
+                    activeBtn.classList.add('tab-active');
+                    activeBtn.classList.remove('bg-white', 'dark:bg-gray-800', 'text-gray-700', 'dark:text-gray-300', 'hover:bg-gray-100', 'dark:hover:bg-gray-700');
+                }
+
+                // Update tab content
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.add('hidden');
+                });
+
+                const activeContent = document.getElementById(`${tabName}Tab`);
+                if (activeContent) {
+                    activeContent.classList.remove('hidden');
+                    activeContent.classList.add('fade-in');
+                }
+
+                this.currentTab = tabName;
+
+                // Load data for specific tabs
+                if (tabName === 'reports' && this.reports.length === 0) {
+                    this.loadReports();
+                } else if (tabName === 'medical-analyses' && this.analyses.length === 0) {
+                    this.loadAnalyses();
+                }
+            }
+
+            showModal(modalId) {
+                const modal = document.getElementById(modalId);
+                modal.classList.remove('hidden');
+                setTimeout(() => {
+                    const content = modal.querySelector('[id$="ModalContent"]');
+                    content.classList.remove('scale-95');
+                    content.classList.add('scale-100');
+                }, 10);
+            }
+
+            hideModal(modalId) {
+                const modal = document.getElementById(modalId);
+                const content = modal.querySelector('[id$="ModalContent"]');
+                if (content) {
+                    content.classList.add('scale-95');
+                    content.classList.remove('scale-100');
+                }
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                }, 300);
+            }
+
+            showImageModal(imageUrl) {
+                document.getElementById('fullScreenImage').src = imageUrl;
+                this.showModal('imageModal');
+            }
+
+            showLoading() {
+                document.getElementById('loadingOverlay').classList.remove('hidden');
+            }
+
+            hideLoading() {
+                document.getElementById('loadingOverlay').classList.add('hidden');
+            }
+
+            showSuccess(message) {
+                this.showToast(message, 'success');
+            }
+
+            showError(message) {
+                this.showToast(message, 'error');
+            }
+
+            showToast(message, type = 'info') {
+                const toast = document.createElement('div');
+                const bgColor = type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-blue-500';
+                
+                toast.className = `${bgColor} text-white px-6 py-3 rounded-lg shadow-lg slide-in-right`;
+                toast.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+                        <span>${message}</span>
+                    </div>
+                `;
+
+                document.getElementById('toastContainer').appendChild(toast);
+
+                setTimeout(() => {
+                    toast.remove();
+                }, 5000);
+            }
+
+            showCustomAlert(message, callback) {
+                const modal = document.createElement('div');
+                modal.className = 'fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50';
+                modal.innerHTML = `
+                    <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg max-w-sm w-full mx-4">
+                        <div class="text-center">
+                            <i class="fas fa-exclamation-circle text-4xl text-yellow-500 mb-4"></i>
+                            <p class="text-gray-700 dark:text-gray-300 mb-6">${message}</p>
+                            <button class="bg-primary hover:bg-purple-600 text-white px-6 py-2 rounded-lg font-semibold transition-colors" onclick="this.closest('.fixed').remove(); ${callback ? 'callback()' : ''}">
+                                موافق
+                            </button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+                
+                if (callback) {
+                    modal.querySelector('button').onclick = () => {
+                        modal.remove();
+                        callback();
+                    };
+                }
+            }
+
+            showCustomConfirm(message, onConfirm) {
+                const modal = document.createElement('div');
+                modal.className = 'fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50';
+                modal.innerHTML = `
+                    <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg max-w-sm w-full mx-4">
+                        <div class="text-center">
+                            <i class="fas fa-question-circle text-4xl text-blue-500 mb-4"></i>
+                            <p class="text-gray-700 dark:text-gray-300 mb-6">${message}</p>
+                            <div class="flex gap-3 justify-center">
+                                <button id="confirmBtn" class="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg font-semibold transition-colors">
+                                    تأكيد
+                                </button>
+                                <button id="cancelBtn" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg font-semibold transition-colors">
+                                    إلغاء
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+                
+                modal.querySelector('#confirmBtn').onclick = () => {
+                    modal.remove();
+                    onConfirm();
+                };
+                
+                modal.querySelector('#cancelBtn').onclick = () => {
+                    modal.remove();
+                };
+            }
+
+            logout() {
+                this.showCustomConfirm('هل أنت متأكد من تسجيل الخروج؟', () => {
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('userData');
+                    localStorage.removeItem('sessionData');
+                    localStorage.removeItem('accessToken');
+                    localStorage.removeItem('doctorSession');
+                    window.location.href = 'Doctor_login.html';
+                });
+            }
+        }
+
+        // Initialize the app
+        const app = new DoctorPlatformApp();
+    </script>
+</body>
+</html>

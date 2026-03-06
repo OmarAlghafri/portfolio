@@ -1,0 +1,2376 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة تحكم المهندس - منصة تحليل الصور الطبية</title>
+    
+    <!-- CSS Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#5D5CDE',
+                        secondary: '#0463FA',
+                        dark: '#1B2C51',
+                        light: '#EFF5FF',
+                        accent: '#FF6B6B',
+                        success: '#4ECDC4',
+                        warning: '#FFD93D',
+                        danger: '#FF6B6B'
+                    },
+                    fontFamily: {
+                        'arabic': ['Cairo', 'system-ui', 'sans-serif']
+                    }
+                }
+            },
+            darkMode: 'class'
+        }
+        
+        // Dark mode detection
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('dark');
+        }
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+            if (event.matches) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        });
+    </script>
+    
+    <style>
+        body {
+            font-family: 'Cairo', system-ui, sans-serif;
+        }
+        
+        .sidebar-transition {
+            transition: transform 0.3s ease;
+        }
+        
+        .card-gradient {
+            background: linear-gradient(135deg, #5D5CDE 0%, #0463FA 100%);
+        }
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .dark .glass-effect {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .status-online { color: #10B981; }
+        .status-offline { color: #EF4444; }
+        .status-warning { color: #F59E0B; }
+        .status-unread { color: #EF4444; }
+        .status-read { color: #10B981; }
+        
+        .btn-shine {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-shine::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.6s;
+        }
+        
+        .btn-shine:hover::before {
+            left: 100%;
+        }
+        
+        .table-row:hover {
+            background-color: rgba(93, 92, 222, 0.05);
+        }
+        
+        .loading-spinner {
+            animation: spin 1s linear infinite;
+        }
+        
+        .unread-row {
+            background-color: rgba(239, 68, 68, 0.05);
+            border-right: 4px solid #EF4444;
+        }
+        
+        .read-row {
+            background-color: rgba(16, 185, 129, 0.05);
+            border-right: 4px solid #10B981;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        .stats-card {
+            transition: all 0.3s ease;
+        }
+        
+        .stats-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 dark:bg-gray-900 font-arabic">
+    <!-- Loading Spinner -->
+    <div id="loadingSpinner" class="fixed inset-0 z-50 flex items-center justify-center bg-white dark:bg-gray-900 transition-opacity duration-500">
+        <div class="relative">
+            <div class="w-20 h-20 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+            <div class="absolute inset-0 w-20 h-20 border-4 border-secondary border-b-transparent rounded-full animate-spin" style="animation-direction: reverse;"></div>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="flex h-screen">
+        <!-- Sidebar -->
+        <aside id="sidebar" class="w-64 bg-white dark:bg-gray-800 shadow-xl sidebar-transition">
+            <div class="p-6">
+                <!-- Logo -->
+                <div class="flex items-center gap-3 mb-8">
+                    <div class="w-10 h-10 card-gradient rounded-xl flex items-center justify-center">
+                        <i class="fas fa-cogs text-white"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-lg font-bold text-gray-800 dark:text-white">لوحة التحكم</h1>
+                        <p class="text-xs text-gray-500">إدارة النظام</p>
+                    </div>
+                </div>
+
+                <!-- Navigation Menu -->
+                <nav class="space-y-2">
+                    <a href="#dashboard" class="nav-item flex items-center gap-3 p-3 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-primary hover:text-white transition-all duration-300" data-section="dashboard">
+                        <i class="fas fa-chart-bar w-5"></i>
+                        <span>لوحة المعلومات</span>
+                    </a>
+                    <a href="#users" class="nav-item flex items-center gap-3 p-3 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-primary hover:text-white transition-all duration-300" data-section="users">
+                        <i class="fas fa-users w-5"></i>
+                        <span>إدارة المستخدمين</span>
+                    </a>
+                    <a href="#create-accounts" class="nav-item flex items-center gap-3 p-3 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-primary hover:text-white transition-all duration-300" data-section="create-accounts">
+                        <i class="fas fa-user-plus w-5"></i>
+                        <span>إنشاء الحسابات</span>
+                    </a>
+                    <a href="#notifications" class="nav-item flex items-center gap-3 p-3 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-primary hover:text-white transition-all duration-300" data-section="notifications">
+                        <i class="fas fa-bell w-5"></i>
+                        <span>إدارة الإشعارات</span>
+                    </a>
+                    <a href="#results" class="nav-item flex items-center gap-3 p-3 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-primary hover:text-white transition-all duration-300" data-section="results">
+                        <i class="fas fa-chart-line w-5"></i>
+                        <span>نتائج التحليل</span>
+                    </a>
+                    <a href="#system" class="nav-item flex items-center gap-3 p-3 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-primary hover:text-white transition-all duration-300" data-section="system">
+                        <i class="fas fa-server w-5"></i>
+                        <span>مراقبة النظام</span>
+                    </a>
+                    <a href="#activity" class="nav-item flex items-center gap-3 p-3 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-primary hover:text-white transition-all duration-300" data-section="activity">
+                        <i class="fas fa-history w-5"></i>
+                        <span>سجل النشاطات</span>
+                    </a>
+                    <a href="#database" class="nav-item flex items-center gap-3 p-3 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-primary hover:text-white transition-all duration-300" data-section="database">
+                        <i class="fas fa-database w-5"></i>
+                        <span>إدارة قاعدة البيانات</span>
+                    </a>
+                    <a href="#contact-messages" class="nav-item flex items-center gap-3 p-3 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-primary hover:text-white transition-all duration-300" data-section="contact-messages">
+                        <i class="fas fa-envelope w-5"></i>
+                        <span>رسائل التواصل</span>
+                    </a>
+                    
+                    <hr class="my-4 border-gray-200 dark:border-gray-600">
+                    
+                    <a href="#" id="logoutBtn" class="flex items-center gap-3 p-3 rounded-xl text-red-600 hover:bg-red-50 dark:hover:bg-red-900 transition-all duration-300">
+                        <i class="fas fa-sign-out-alt w-5"></i>
+                        <span>تسجيل الخروج</span>
+                    </a>
+                </nav>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 overflow-hidden">
+            <!-- Header -->
+            <header class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+                <div class="flex items-center justify-between p-6">
+                    <div class="flex items-center gap-4">
+                        <button id="sidebarToggle" class="lg:hidden text-gray-600 dark:text-gray-300">
+                            <i class="fas fa-bars text-xl"></i>
+                        </button>
+                        <div>
+                            <h1 id="pageTitle" class="text-2xl font-bold text-gray-800 dark:text-white">لوحة المعلومات</h1>
+                            <p class="text-sm text-gray-500 dark:text-gray-400" id="pageSubtitle">نظرة عامة على النظام</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center gap-4">
+
+                        
+                        <!-- User Info -->
+                        <div class="flex items-center gap-3">
+                            <div class="text-right">
+                                <p class="text-sm font-semibold text-gray-800 dark:text-white" id="userName">مهندس النظام</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">مدير النظام</p>
+                            </div>
+                            <div class="w-10 h-10 card-gradient rounded-xl flex items-center justify-center">
+                                <i class="fas fa-user text-white"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content Area -->
+            <div class="p-6 overflow-y-auto h-full">
+                <!-- Dashboard Section -->
+                <div id="dashboard-section" class="section">
+                    <!-- Stats Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                        <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg stats-card fade-in">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">إجمالي المستخدمين</p>
+                                    <p class="text-3xl font-bold text-primary" id="totalUsers">0</p>
+                                </div>
+                                <div class="w-12 h-12 bg-primary bg-opacity-10 rounded-xl flex items-center justify-center">
+                                    <i class="fas fa-users text-primary text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg stats-card fade-in">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">إجمالي التحاليل</p>
+                                    <p class="text-3xl font-bold text-secondary" id="totalAnalyses">0</p>
+                                </div>
+                                <div class="w-12 h-12 bg-secondary bg-opacity-10 rounded-xl flex items-center justify-center">
+                                    <i class="fas fa-chart-bar text-secondary text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg stats-card fade-in">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">النتائج الإيجابية</p>
+                                    <p class="text-3xl font-bold text-warning" id="positiveResults">0</p>
+                                </div>
+                                <div class="w-12 h-12 bg-warning bg-opacity-10 rounded-xl flex items-center justify-center">
+                                    <i class="fas fa-exclamation-triangle text-warning text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg stats-card fade-in">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">متوسط الدقة</p>
+                                    <p class="text-3xl font-bold text-success" id="averageAccuracy">0%</p>
+                                </div>
+                                <div class="w-12 h-12 bg-success bg-opacity-10 rounded-xl flex items-center justify-center">
+                                    <i class="fas fa-bullseye text-success text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts Row -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                        <!-- System Status -->
+                        <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg fade-in">
+                            <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-6">حالة النظام</h3>
+                            <div class="space-y-4" id="systemStatus">
+                                <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
+                                    <div class="flex items-center gap-3">
+                                        <i class="fas fa-server text-gray-600"></i>
+                                        <span>الخادم</span>
+                                    </div>
+                                    <span class="status-online">
+                                        <i class="fas fa-circle text-xs"></i> متصل
+                                    </span>
+                                </div>
+                                <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
+                                    <div class="flex items-center gap-3">
+                                        <i class="fas fa-database text-gray-600"></i>
+                                        <span>قاعدة البيانات</span>
+                                    </div>
+                                    <span class="status-online">
+                                        <i class="fas fa-circle text-xs"></i> متصل
+                                    </span>
+                                </div>
+                                <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
+                                    <div class="flex items-center gap-3">
+                                        <i class="fas fa-brain text-gray-600"></i>
+                                        <span>نموذج الذكاء الاصطناعي</span>
+                                    </div>
+                                    <span class="status-online">
+                                        <i class="fas fa-circle text-xs"></i> نشط
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recent Activity -->
+                        <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg fade-in">
+                            <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-6">النشاطات الأخيرة</h3>
+                            <div class="space-y-4" id="recentActivity">
+                                <!-- Dynamic content will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Users Management Section -->
+                <div id="users-section" class="section hidden">
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg fade-in">
+                        <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                                <h2 class="text-xl font-semibold text-gray-800 dark:text-white">إدارة المستخدمين</h2>
+                                <div class="flex gap-3">
+                                    <input type="text" id="userSearchInput" placeholder="البحث عن مستخدم..."
+                                           class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-800 dark:text-white text-base">
+                                    <button id="refreshUsersBtn" class="bg-primary hover:bg-purple-600 text-white px-4 py-2 rounded-xl transition-all duration-300 btn-shine">
+                                        <i class="fas fa-sync-alt"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-gray-50 dark:bg-gray-700">
+                                    <tr>
+                                        <th class="text-right py-3 px-6 text-sm font-semibold text-gray-700 dark:text-gray-300">المعرف</th>
+                                        <th class="text-right py-3 px-6 text-sm font-semibold text-gray-700 dark:text-gray-300">الاسم</th>
+                                        <th class="text-right py-3 px-6 text-sm font-semibold text-gray-700 dark:text-gray-300">البريد الإلكتروني</th>
+                                        <th class="text-right py-3 px-6 text-sm font-semibold text-gray-700 dark:text-gray-300">الدور</th>
+                                        <th class="text-right py-3 px-6 text-sm font-semibold text-gray-700 dark:text-gray-300">تاريخ التسجيل</th>
+                                        <th class="text-right py-3 px-6 text-sm font-semibold text-gray-700 dark:text-gray-300">الحالة</th>
+                                        <th class="text-center py-3 px-6 text-sm font-semibold text-gray-700 dark:text-gray-300">الإجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="usersTableBody" class="divide-y divide-gray-200 dark:divide-gray-600">
+                                    <!-- Dynamic content will be loaded here -->
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Pagination -->
+                        <div class="p-6 border-t border-gray-200 dark:border-gray-700">
+                            <div class="flex items-center justify-between">
+                                <p class="text-sm text-gray-500 dark:text-gray-400" id="usersCount">جاري التحميل...</p>
+                                <div class="flex gap-2" id="usersPagination">
+                                    <!-- Pagination buttons will be added here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Create Accounts Section -->
+                <div id="create-accounts-section" class="section hidden">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <!-- Create Doctor Account -->
+                        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 fade-in">
+                            <div class="flex items-center gap-3 mb-6">
+                                <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-xl flex items-center justify-center">
+                                    <i class="fas fa-stethoscope text-blue-600 dark:text-blue-400"></i>
+                                </div>
+                                <h2 class="text-xl font-semibold text-gray-800 dark:text-white">إنشاء حساب طبيب</h2>
+                            </div>
+                            
+                            <form id="createDoctorForm" class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">اسم الطبيب</label>
+                                    <input type="text" id="doctorName" required 
+                                           class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-800 dark:text-white text-base"
+                                           placeholder="أدخل اسم الطبيب كاملاً">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">البريد الإلكتروني</label>
+                                    <input type="email" id="doctorEmail" required 
+                                           class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-800 dark:text-white text-base"
+                                           placeholder="doctor@doctor.com">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">كلمة المرور</label>
+                                    <input type="password" id="doctorPassword" required 
+                                           class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-800 dark:text-white text-base"
+                                           placeholder="كلمة مرور قوية">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">التخصص</label>
+                                    <select id="doctorSpecialty" 
+                                            class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-800 dark:text-white text-base">
+                                        <option value="">اختر التخصص</option>
+                                        <option value="cardiology">أمراض القلب</option>
+                                        <option value="radiology">الأشعة</option>
+                                        <option value="internal">الباطنة</option>
+                                        <option value="emergency">الطوارئ</option>
+                                        <option value="general">طب عام</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">رقم الترخيص</label>
+                                    <input type="text" id="doctorLicense" 
+                                           class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-800 dark:text-white text-base"
+                                           placeholder="رقم ترخيص الطبيب">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">ملاحظات</label>
+                                    <textarea id="doctorNotes" rows="3"
+                                              class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-800 dark:text-white text-base resize-none"
+                                              placeholder="ملاحظات إضافية (اختياري)"></textarea>
+                                </div>
+                                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-semibold transition-all duration-300 btn-shine">
+                                    <i class="fas fa-plus ml-2"></i>
+                                    إنشاء حساب الطبيب
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- Create Engineer Account -->
+                        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 fade-in">
+                            <div class="flex items-center gap-3 mb-6">
+                                <div class="w-10 h-10 bg-purple-100 dark:bg-purple-900 rounded-xl flex items-center justify-center">
+                                    <i class="fas fa-cogs text-purple-600 dark:text-purple-400"></i>
+                                </div>
+                                <h2 class="text-xl font-semibold text-gray-800 dark:text-white">إنشاء حساب مهندس</h2>
+                            </div>
+                            
+                            <form id="createEngineerForm" class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">اسم المهندس</label>
+                                    <input type="text" id="engineerName" required 
+                                           class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-800 dark:text-white text-base"
+                                           placeholder="أدخل اسم المهندس كاملاً">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">البريد الإلكتروني</label>
+                                    <input type="email" id="engineerEmail" required 
+                                           class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-800 dark:text-white text-base"
+                                           placeholder="engineer@engineer.com">
+                                    <p class="text-xs text-orange-500 mt-1">يجب أن ينتهي البريد بـ @engineer.com</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">كلمة المرور</label>
+                                    <input type="password" id="engineerPassword" required 
+                                           class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-800 dark:text-white text-base"
+                                           placeholder="كلمة مرور قوية">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">التخصص</label>
+                                    <select id="engineerSpecialty" 
+                                            class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-800 dark:text-white text-base">
+                                        <option value="">اختر التخصص</option>
+                                        <option value="software">هندسة البرمجيات</option>
+                                        <option value="ai">الذكاء الاصطناعي</option>
+                                        <option value="data">علوم البيانات</option>
+                                        <option value="network">شبكات الحاسوب</option>
+                                        <option value="systems">أنظمة المعلومات</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">مستوى الصلاحية</label>
+                                    <select id="engineerLevel" 
+                                            class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-800 dark:text-white text-base">
+                                        <option value="junior">مهندس مبتدئ</option>
+                                        <option value="senior">مهندس أول</option>
+                                        <option value="lead">مهندس رئيسي</option>
+                                        <option value="admin">مدير نظام</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">ملاحظات</label>
+                                    <textarea id="engineerNotes" rows="3"
+                                              class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-800 dark:text-white text-base resize-none"
+                                              placeholder="ملاحظات إضافية (اختياري)"></textarea>
+                                </div>
+                                <button type="submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-xl font-semibold transition-all duration-300 btn-shine">
+                                    <i class="fas fa-plus ml-2"></i>
+                                    إنشاء حساب المهندس
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Recent Created Accounts -->
+                    <div class="mt-8 bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 fade-in">
+                        <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-6">الحسابات المنشأة حديثاً</h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-gray-50 dark:bg-gray-700">
+                                    <tr>
+                                        <th class="text-right py-3 px-6 text-sm font-semibold text-gray-700 dark:text-gray-300">الاسم</th>
+                                        <th class="text-right py-3 px-6 text-sm font-semibold text-gray-700 dark:text-gray-300">البريد</th>
+                                        <th class="text-right py-3 px-6 text-sm font-semibold text-gray-700 dark:text-gray-300">النوع</th>
+                                        <th class="text-right py-3 px-6 text-sm font-semibold text-gray-700 dark:text-gray-300">التخصص</th>
+                                        <th class="text-right py-3 px-6 text-sm font-semibold text-gray-700 dark:text-gray-300">تاريخ الإنشاء</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recentAccountsBody">
+                                    <!-- Dynamic content will be loaded here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+       <!-- Notifications Section -->
+                <div id="notifications-section" class="section hidden">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <!-- Create Notification -->
+                        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 fade-in">
+                            <div class="flex items-center gap-3 mb-6">
+                                <div class="w-10 h-10 bg-indigo-100 dark:bg-indigo-900 rounded-xl flex items-center justify-center">
+                                    <i class="fas fa-bell text-indigo-600 dark:text-indigo-400"></i>
+                                </div>
+                                <h2 class="text-xl font-semibold text-gray-800 dark:text-white">إنشاء إشعار جديد</h2>
+                            </div>
+                            
+                            <form id="createNotificationForm" class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">المستخدم (اختياري)</label>
+                                    <select id="notificationUserId" 
+                                            class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-800 dark:text-white text-base">
+                                        <option value="">إشعار عام (لجميع المستخدمين)</option>
+                                        <!-- سيتم ملء خيارات المستخدمين ديناميكياً -->
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">عنوان الإشعار</label>
+                                    <input type="text" id="notificationTitle" required 
+                                           class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-800 dark:text-white text-base"
+                                           placeholder="أدخل عنوان الإشعار">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">نص الإشعار</label>
+                                    <textarea id="notificationMessage" rows="4" required
+                                              class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-800 dark:text-white text-base resize-none"
+                                              placeholder="أدخل محتوى الإشعار"></textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">نوع الإشعار</label>
+                                    <select id="notificationType" 
+                                            class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-800 dark:text-white text-base">
+                                        <option value="general">عام</option>
+                                        <option value="warning">تحذير</option>
+                                        <option value="important">مهم</option>
+                                        <option value="urgent">عاجل</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">معرف ذو صلة (اختياري)</label>
+                                    <input type="number" id="notificationRelatedId" 
+                                           class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-800 dark:text-white text-base"
+                                           placeholder="أدخل المعرف المرتبط (مثل معرف نتيجة تحليل)">
+                                </div>
+                                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-xl font-semibold transition-all duration-300 btn-shine">
+                                    <i class="fas fa-paper-plane ml-2"></i>
+                                    إرسال الإشعار
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- Recent Notifications -->
+                        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 fade-in">
+                            <div class="flex items-center gap-3 mb-6">
+                                <div class="w-10 h-10 bg-green-100 dark:bg-green-900 rounded-xl flex items-center justify-center">
+                                    <i class="fas fa-history text-green-600 dark:text-green-400"></i>
+                                </div>
+                                <h2 class="text-xl font-semibold text-gray-800 dark:text-white">الإشعارات المنشأة حديثاً</h2>
+                            </div>
+                            
+                            <div class="flex gap-3 mb-4">
+                                <select id="notificationFilter" 
+                                        class="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-800 dark:text-white text-base">
+                                    <option value="">جميع الإشعارات</option>
+                                    <option value="general">عام</option>
+                                    <option value="warning">تحذير</option>
+                                    <option value="important">مهم</option>
+                                    <option value="urgent">عاجل</option>
+                                </select>
+                                <button id="refreshNotificationsBtn" class="bg-primary hover:bg-purple-600 text-white px-4 py-2 rounded-xl transition-all duration-300 btn-shine">
+                                    <i class="fas fa-sync-alt"></i>
+                                </button>
+                            </div>
+                            
+                            <div class="space-y-4 max-h-96 overflow-y-auto" id="recentNotifications">
+                                <!-- سيتم ملء الإشعارات ديناميكياً -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Results Section -->
+                <div id="results-section" class="section hidden">
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg fade-in">
+                        <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                                <h2 class="text-xl font-semibold text-gray-800 dark:text-white">نتائج التحليل</h2>
+                                <div class="flex gap-3">
+                                    <input type="date" id="resultsStartDate" 
+                                           class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-800 dark:text-white text-base">
+                                    <input type="date" id="resultsEndDate" 
+                                           class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-800 dark:text-white text-base">
+                                    <button id="exportResultsBtn" class="bg-success hover:bg-teal-600 text-white px-4 py-2 rounded-xl transition-all duration-300 btn-shine">
+                                        <i class="fas fa-download ml-2"></i>
+                                        تصدير
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-gray-50 dark:bg-gray-700">
+                                    <tr>
+                                        <th class="text-right py-3 px-6 text-sm font-semibold text-gray-700 dark:text-gray-300">المعرف</th>
+                                        <th class="text-right py-3 px-6 text-sm font-semibold text-gray-700 dark:text-gray-300">اسم الملف</th>
+                                        <th class="text-right py-3 px-6 text-sm font-semibold text-gray-700 dark:text-gray-300">اسم المستخدم</th>
+                                        <th class="text-right py-3 px-6 text-sm font-semibold text-gray-700 dark:text-gray-300">التشخيص</th>
+                                        <th class="text-right py-3 px-6 text-sm font-semibold text-gray-700 dark:text-gray-300">مستوى الثقة</th>
+                                        <th class="text-right py-3 px-6 text-sm font-semibold text-gray-700 dark:text-gray-300">التاريخ</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="resultsTableBody">
+                                    <!-- Dynamic content will be loaded here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Monitoring Section -->
+                <div id="system-section" class="section hidden">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <!-- System Performance -->
+                        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 fade-in">
+                            <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-6">أداء النظام</h3>
+                            <div class="space-y-6" id="systemPerformance">
+                                <!-- Dynamic content will be loaded here -->
+                            </div>
+                        </div>
+
+                        <!-- Database Stats -->
+                        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 fade-in">
+                            <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-6">إحصائيات قاعدة البيانات</h3>
+                            <div class="space-y-4" id="databaseStats">
+                                <!-- Dynamic content will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Activity Log Section -->
+                <div id="activity-section" class="section hidden">
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg fade-in">
+                        <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                                <h2 class="text-xl font-semibold text-gray-800 dark:text-white">سجل النشاطات</h2>
+                                <div class="flex gap-3">
+                                    <select id="activityFilter" 
+                                            class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-800 dark:text-white text-base">
+                                        <option value="">جميع النشاطات</option>
+                                        <option value="login">تسجيل الدخول</option>
+                                        <option value="create_doctor">إنشاء حساب طبيب</option>
+                                        <option value="create_engineer">إنشاء حساب مهندس</option>
+                                        <option value="analysis">تحليل صورة</option>
+                                        <option value="update_user">تحديث مستخدم</option>
+                                        <option value="delete_user">حذف مستخدم</option>
+                                    </select>
+                                    <button id="refreshActivityBtn" class="bg-primary hover:bg-purple-600 text-white px-4 py-2 rounded-xl transition-all duration-300 btn-shine">
+                                        <i class="fas fa-sync-alt"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="p-6">
+                            <div class="space-y-4" id="activityList">
+                                <!-- Dynamic content will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Database Management Section -->
+                <div id="database-section" class="section hidden">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        
+                        <!-- SQL Query Executor -->
+                        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 fade-in">
+                            <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-6">منفذ استعلامات SQL</h3>
+                            <form id="sqlQueryForm" class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">استعلام SQL</label>
+                                    <textarea id="sqlQuery" rows="6" 
+                                              class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-800 dark:text-white text-base font-mono"
+                                              placeholder="SELECT * FROM users LIMIT 10;"></textarea>
+                                    <p class="text-xs text-orange-500 mt-1">تحذير: استعلامات الحذف والتعديل محظورة لأسباب أمنية</p>
+                                </div>
+                                <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white py-3 rounded-xl font-semibold transition-all duration-300 btn-shine">
+                                    <i class="fas fa-play ml-2"></i>
+                                    تنفيذ الاستعلام
+                                </button>
+                            </form>
+                            <div id="sqlResults" class="mt-6 hidden">
+                                <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">نتائج الاستعلام:</h4>
+                                <div class="bg-gray-50 dark:bg-gray-700 rounded-xl p-4 max-h-60 overflow-auto">
+                                    <pre id="sqlResultsContent" class="text-sm text-gray-800 dark:text-gray-200"></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contact Messages Section -->
+                <div id="contact-messages-section" class="section hidden">
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg fade-in">
+                        <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                                <div>
+                                    <h2 class="text-xl font-semibold text-gray-800 dark:text-white">رسائل التواصل</h2>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">إدارة الرسائل الواردة من المستخدمين</p>
+                                </div>
+                                <div class="flex gap-3">
+                                    <select id="messageTypeFilter" 
+                                            class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-800 dark:text-white text-base">
+                                        <option value="">جميع الرسائل</option>
+                                        <option value="general">رسائل عامة</option>
+                                        <option value="doctor">رسائل الأطباء</option>
+                                    </select>
+                                    <select id="messageStatusFilter" 
+                                            class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-800 dark:text-white text-base">
+                                        <option value="">جميع الحالات</option>
+                                        <option value="new">غير مقروءة</option>
+                                        <option value="read">مقروءة</option>
+                                    </select>
+                                    <button id="refreshMessagesBtn" class="bg-primary hover:bg-purple-600 text-white px-4 py-2 rounded-xl transition-all duration-300 btn-shine">
+                                        <i class="fas fa-sync-alt"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-gray-50 dark:bg-gray-700">
+                                    <tr>
+                                        <th class="text-right py-3 px-6 text-sm font-semibold text-gray-700 dark:text-gray-300">المعرف</th>
+                                        <th class="text-right py-3 px-6 text-sm font-semibold text-gray-700 dark:text-gray-300">الاسم</th>
+                                        <th class="text-right py-3 px-6 text-sm font-semibold text-gray-700 dark:text-gray-300">البريد الإلكتروني</th>
+                                        <th class="text-right py-3 px-6 text-sm font-semibold text-gray-700 dark:text-gray-300">الموضوع</th>
+                                        <th class="text-right py-3 px-6 text-sm font-semibold text-gray-700 dark:text-gray-300">النوع</th>
+                                        <th class="text-right py-3 px-6 text-sm font-semibold text-gray-700 dark:text-gray-300">حالة القراءة</th>
+                                        <th class="text-right py-3 px-6 text-sm font-semibold text-gray-700 dark:text-gray-300">التاريخ</th>
+                                        <th class="text-center py-3 px-6 text-sm font-semibold text-gray-700 dark:text-gray-300">الإجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="contactMessagesTableBody" class="divide-y divide-gray-200 dark:divide-gray-600">
+                                    <!-- Dynamic content will be loaded here -->
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Pagination -->
+                        <div class="p-6 border-t border-gray-200 dark:border-gray-700">
+                            <div class="flex items-center justify-between">
+                                <p class="text-sm text-gray-500 dark:text-gray-400" id="messagesCount">جاري التحميل...</p>
+                                <div class="flex gap-2" id="messagesPagination">
+                                    <!-- Pagination buttons will be added here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Message Details Modal -->
+                <div id="messageModal" class="fixed inset-0 z-50 hidden">
+                    <div class="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm" id="messageModalBackdrop"></div>
+                    <div class="flex items-center justify-center min-h-screen p-4">
+                        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-2xl transform transition-all duration-300 scale-95" id="messageModalContent">
+                            <div class="p-6">
+                                <div class="flex items-center justify-between mb-6">
+                                    <h3 class="text-xl font-bold text-gray-800 dark:text-white">تفاصيل الرسالة</h3>
+                                    <button id="closeMessageModal" class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-colors">
+                                        <i class="fas fa-times text-xl"></i>
+                                    </button>
+                                </div>
+                                
+                                <div id="messageDetails" class="space-y-4">
+                                    <!-- Message details will be loaded here -->
+                                </div>
+                                
+                                <div class="flex gap-3 mt-6">
+                                    <button id="markAsReadBtn" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-semibold transition-all duration-300 btn-shine">
+                                        <i class="fas fa-eye ml-2"></i>
+                                        تحديد كمقروءة
+                                    </button>
+                                    <button id="deleteMessageBtn" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-3 rounded-xl font-semibold transition-all duration-300 btn-shine">
+                                        <i class="fas fa-trash ml-2"></i>
+                                        حذف الرسالة
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Success/Error Toast -->
+    <div id="toast" class="fixed top-6 left-6 transform -translate-x-full transition-transform duration-300 z-50">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-600 p-4 min-w-80">
+            <div class="flex items-center gap-3">
+                <div id="toastIcon" class="w-6 h-6 rounded-full flex items-center justify-center">
+                    <i class="fas fa-check text-white text-sm"></i>
+                </div>
+                <div>
+                    <p id="toastTitle" class="font-semibold text-gray-800 dark:text-white"></p>
+                    <p id="toastMessage" class="text-sm text-gray-600 dark:text-gray-300"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        class AdminDashboard {
+            constructor() {
+                this.API_BASE = 'http://localhost:8000';
+                this.currentPage = 0;
+                this.pageSize = 10;
+                this.currentSection = 'dashboard';
+                this.init();
+            }
+
+            init() {
+                this.hideLoadingSpinner();
+                this.checkAuthentication();
+                this.setupEventListeners();
+                this.loadDashboardData();
+                this.showSection('dashboard');
+            }
+
+            hideLoadingSpinner() {
+                setTimeout(() => {
+                    document.getElementById('loadingSpinner').style.opacity = '0';
+                    setTimeout(() => {
+                        document.getElementById('loadingSpinner').style.display = 'none';
+                    }, 500);
+                }, 1000);
+            }
+
+            checkAuthentication() {
+                const token = localStorage.getItem('token');
+                const userData = localStorage.getItem('userData');
+                
+                if (!token || !userData) {
+                    window.location.href = 'admin_login.html';
+                    return;
+                }
+
+                try {
+                    const user = JSON.parse(userData);
+                    // التحقق من أن المستخدم مهندس وأن البريد ينتهي بـ @engineer.com
+                    if (user.role !== 'engineer' || !user.email.endsWith('@engineer.com')) {
+                        this.showToast('error', 'خطأ في الصلاحية', 'ليس لديك صلاحية للوصول إلى هذه الصفحة');
+                        setTimeout(() => {
+                            window.location.href = 'admin_login.html';
+                        }, 2000);
+                        return;
+                    }
+                    
+                    document.getElementById('userName').textContent = user.name || 'مهندس النظام';
+                } catch (e) {
+                    window.location.href = 'admin_login.html';
+                }
+            }
+
+            setupEventListeners() {
+                // Navigation
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    item.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const section = item.getAttribute('data-section');
+                        this.showSection(section);
+                    });
+                }
+            );
+document.getElementById('createNotificationForm').addEventListener('submit', (e) => this.handleCreateNotification(e));
+                // Logout
+                document.getElementById('logoutBtn').addEventListener('click', () => {
+                    this.showConfirmDialog('هل أنت متأكد من تسجيل الخروج؟', () => {
+                        localStorage.removeItem('token');
+                        localStorage.removeItem('userData');
+                        window.location.href = 'admin_login.html';
+                    });
+                });
+
+                // Sidebar toggle
+                document.getElementById('sidebarToggle').addEventListener('click', () => {
+                    document.getElementById('sidebar').classList.toggle('-translate-x-full');
+                });
+
+                // Forms
+                document.getElementById('createDoctorForm').addEventListener('submit', (e) => this.handleCreateDoctor(e));
+                document.getElementById('createEngineerForm').addEventListener('submit', (e) => this.handleCreateEngineer(e));
+                document.getElementById('sqlQueryForm').addEventListener('submit', (e) => this.handleSqlQuery(e));
+document.getElementById('createNotificationForm').addEventListener('submit', (e) => this.handleCreateNotification(e));
+                // Refresh buttons
+                document.getElementById('refreshUsersBtn').addEventListener('click', () => this.loadUsers());
+                document.getElementById('refreshActivityBtn').addEventListener('click', () => this.loadActivity());
+                document.getElementById('refreshMessagesBtn').addEventListener('click', () => this.loadContactMessages());
+                document.getElementById('refreshNotificationsBtn').addEventListener('click', () => this.loadNotifications());
+
+                // Database operations
+                document.getElementById('backupDbBtn').addEventListener('click', () => this.backupDatabase());
+                document.getElementById('optimizeDbBtn').addEventListener('click', () => this.optimizeDatabase());
+                document.getElementById('cleanupDbBtn').addEventListener('click', () => this.cleanupDatabase());
+
+                // Export results
+                document.getElementById('exportResultsBtn').addEventListener('click', () => this.exportResults());
+
+                // Search
+                document.getElementById('userSearchInput').addEventListener('input', (e) => {
+                    clearTimeout(this.searchTimeout);
+                    this.searchTimeout = setTimeout(() => {
+                        this.loadUsers(0, e.target.value);
+                    }, 500);
+                });
+
+                // Contact messages filters
+                document.getElementById('messageTypeFilter').addEventListener('change', () => this.loadContactMessages());
+                document.getElementById('messageStatusFilter').addEventListener('change', () => this.loadContactMessages());
+
+                // Message modal
+                document.getElementById('closeMessageModal').addEventListener('click', () => this.hideMessageModal());
+                document.getElementById('messageModalBackdrop').addEventListener('click', () => this.hideMessageModal());
+                document.getElementById('markAsReadBtn').addEventListener('click', () => this.markMessageAsRead());
+                document.getElementById('deleteMessageBtn').addEventListener('click', () => this.deleteMessage());
+                 // Notifications filter
+                document.getElementById('notificationFilter').addEventListener('change', () => this.loadNotifications());
+            }
+
+            showSection(section) {
+                // Hide all sections
+                document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
+                
+                // Show selected section
+                document.getElementById(`${section}-section`).classList.remove('hidden');
+                
+                // Update navigation
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    item.classList.remove('bg-primary', 'text-white');
+                    item.classList.add('text-gray-600', 'dark:text-gray-300');
+                });
+                
+                document.querySelector(`[data-section="${section}"]`).classList.add('bg-primary', 'text-white');
+                document.querySelector(`[data-section="${section}"]`).classList.remove('text-gray-600', 'dark:text-gray-300');
+
+                // Update page title
+                const titles = {
+                    dashboard: 'لوحة المعلومات',
+                    users: 'إدارة المستخدمين',
+                    'create-accounts': 'إنشاء الحسابات',
+                    'notifications': 'إدارة الإشعارات',
+                    results: 'نتائج التحليل',
+                    system: 'مراقبة النظام',
+                    activity: 'سجل النشاطات',
+                    database: 'إدارة قاعدة البيانات',
+                    'contact-messages': 'رسائل التواصل'
+                };
+                
+                document.getElementById('pageTitle').textContent = titles[section];
+                
+                // Load section-specific data
+                this.currentSection = section;
+                this.loadSectionData(section);
+            }
+
+            loadSectionData(section) {
+                switch(section) {
+                    case 'dashboard':
+                        this.loadDashboardData();
+                        break;
+                    case 'users':
+                        this.loadUsers();
+                        break;
+                    case 'create-accounts':
+                        this.loadRecentAccounts();
+                        break;
+                        case 'notifications':
+                        this.loadUsersForNotifications();
+                        this.loadNotifications();
+                        break;
+                    case 'results':
+                        this.loadResults();
+                        break;
+                    case 'system':
+                        this.loadSystemStatus();
+                        break;
+                    case 'activity':
+                        this.loadActivity();
+                        break;
+                    case 'database':
+                        this.loadDatabaseStats();
+                        break;
+                    case 'contact-messages':
+                        this.loadContactMessages();
+                        break;
+                }
+            }
+
+            async loadDashboardData() {
+                try {
+                    const token = localStorage.getItem('token');
+                    const response = await fetch(`${this.API_BASE}/api/admin/stats/`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        
+                        document.getElementById('totalUsers').textContent = data.total_users || 0;
+                        document.getElementById('totalAnalyses').textContent = data.total_analyses || 0;
+                        document.getElementById('positiveResults').textContent = data.positive_results || 0;
+                        document.getElementById('averageAccuracy').textContent = `${data.average_accuracy || 0}%`;
+                    }
+
+                    // Load system status
+                    await this.loadSystemStatusForDashboard();
+                    await this.loadRecentActivityForDashboard();
+
+                } catch (error) {
+                    console.error('Error loading dashboard data:', error);
+                }
+            }
+
+            async loadSystemStatusForDashboard() {
+                try {
+                    const token = localStorage.getItem('token');
+                    const response = await fetch(`${this.API_BASE}/api/admin/system-status/`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        // Update system status display
+                        const statusContainer = document.getElementById('systemStatus');
+                        statusContainer.innerHTML = `
+                            <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
+                                <div class="flex items-center gap-3">
+                                    <i class="fas fa-server text-gray-600"></i>
+                                    <span>الخادم</span>
+                                </div>
+                                <span class="status-online">
+                                    <i class="fas fa-circle text-xs"></i> نشط
+                                </span>
+                            </div>
+                            <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
+                                <div class="flex items-center gap-3">
+                                    <i class="fas fa-database text-gray-600"></i>
+                                    <span>قاعدة البيانات</span>
+                                </div>
+                                <span class="${data.database_status === 'online' ? 'status-online' : 'status-offline'}">
+                                    <i class="fas fa-circle text-xs"></i> ${data.database_status === 'online' ? 'متصل' : 'غير متصل'}
+                                </span>
+                            </div>
+                            <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
+                                <div class="flex items-center gap-3">
+                                    <i class="fas fa-brain text-gray-600"></i>
+                                    <span>نموذج الذكاء الاصطناعي</span>
+                                </div>
+                                <span class="${data.model_status === 'online' ? 'status-online' : 'status-offline'}">
+                                    <i class="fas fa-circle text-xs"></i> ${data.model_status === 'online' ? 'نشط' : 'غير نشط'}
+                                </span>
+                            </div>
+                            <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
+                                <div class="flex items-center gap-3">
+                                    <i class="fas fa-microchip text-gray-600"></i>
+                                    <span>استخدام المعالج</span>
+                                </div>
+                                <span class="text-gray-600 dark:text-gray-300">
+                                    ${data.cpu_usage || 0}%
+                                </span>
+                            </div>
+                        `;
+                    }
+                } catch (error) {
+                    console.error('Error loading system status:', error);
+                }
+            }
+
+            async loadRecentActivityForDashboard() {
+                try {
+                    const token = localStorage.getItem('token');
+                    const response = await fetch(`${this.API_BASE}/api/admin/activity/?limit=5`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+
+                    if (response.ok) {
+                        const activities = await response.json();
+                        const container = document.getElementById('recentActivity');
+                        
+                        if (activities.length === 0) {
+                            container.innerHTML = '<p class="text-gray-500 text-center">لا توجد نشاطات حديثة</p>';
+                            return;
+                        }
+
+                        container.innerHTML = activities.map(activity => `
+                            <div class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-xl">
+                                <div class="w-8 h-8 bg-primary bg-opacity-10 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-${this.getActivityIcon(activity.type)} text-primary text-sm"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm font-medium text-gray-800 dark:text-white">${activity.description}</p>
+                                    <p class="text-xs text-gray-500">${this.formatDate(activity.timestamp)}</p>
+                                </div>
+                            </div>
+                        `).join('');
+                    }
+                } catch (error) {
+                    console.error('Error loading recent activity:', error);
+                }
+            }
+
+            async loadUsers(page = 0, search = '') {
+                try {
+                    const token = localStorage.getItem('token');
+                    const searchParam = search ? `&search=${encodeURIComponent(search)}` : '';
+                    const response = await fetch(`${this.API_BASE}/api/admin/users/?limit=${this.pageSize}&offset=${page * this.pageSize}${searchParam}`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        this.renderUsersTable(data.users);
+                        this.renderUsersPagination(data.total_count, page);
+                        document.getElementById('usersCount').textContent = `عرض ${data.users.length} من أصل ${data.total_count} مستخدم`;
+                    }
+                } catch (error) {
+                    console.error('Error loading users:', error);
+                    this.showToast('error', 'خطأ', 'فشل في تحميل بيانات المستخدمين');
+                }
+            }
+
+            renderUsersTable(users) {
+                const tbody = document.getElementById('usersTableBody');
+                
+                if (users.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="7" class="text-center py-8 text-gray-500">لا توجد بيانات</td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                tbody.innerHTML = users.map(user => `
+                    <tr class="table-row">
+                        <td class="py-4 px-6 text-sm text-gray-800 dark:text-white">${user.id}</td>
+                        <td class="py-4 px-6 text-sm text-gray-800 dark:text-white">${user.name || 'غير محدد'}</td>
+                        <td class="py-4 px-6 text-sm text-gray-600 dark:text-gray-300">${user.email}</td>
+                        <td class="py-4 px-6">
+                            <span class="px-2 py-1 text-xs rounded-full ${user.role === 'engineer' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'}">
+                                ${user.role === 'engineer' ? 'مهندس' : 'مستخدم'}
+                            </span>
+                        </td>
+                        <td class="py-4 px-6 text-sm text-gray-600 dark:text-gray-300">${this.formatDate(user.created_at)}</td>
+                        <td class="py-4 px-6">
+                            <span class="px-2 py-1 text-xs rounded-full ${user.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                                ${user.is_active ? 'نشط' : 'معطل'}
+                            </span>
+                        </td>
+                        <td class="py-4 px-6 text-center">
+                            <div class="flex justify-center gap-2">
+                                <button onclick="admin.toggleUserStatus(${user.id})" class="text-blue-600 hover:bg-blue-50 p-2 rounded-lg transition-colors" title="تغيير الحالة">
+                                    <i class="fas fa-toggle-${user.is_active ? 'on' : 'off'}"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            renderUsersPagination(totalCount, currentPage) {
+                const totalPages = Math.ceil(totalCount / this.pageSize);
+                const pagination = document.getElementById('usersPagination');
+                
+                let paginationHTML = '';
+                
+                // Previous button
+                if (currentPage > 0) {
+                    paginationHTML += `
+                        <button onclick="admin.loadUsers(${currentPage - 1})" 
+                                class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    `;
+                }
+                
+                // Page numbers
+                const startPage = Math.max(0, currentPage - 2);
+                const endPage = Math.min(totalPages - 1, currentPage + 2);
+                
+                for (let i = startPage; i <= endPage; i++) {
+                    paginationHTML += `
+                        <button onclick="admin.loadUsers(${i})" 
+                                class="px-4 py-2 ${i === currentPage ? 'bg-primary text-white' : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300'} border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors">
+                            ${i + 1}
+                        </button>
+                    `;
+                }
+                
+                // Next button
+                if (currentPage < totalPages - 1) {
+                    paginationHTML += `
+                        <button onclick="admin.loadUsers(${currentPage + 1})" 
+                                class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                    `;
+                }
+                
+                pagination.innerHTML = paginationHTML;
+            }
+
+            async toggleUserStatus(userId) {
+                this.showConfirmDialog('هل أنت متأكد من تغيير حالة هذا المستخدم؟', async () => {
+                    try {
+                        const token = localStorage.getItem('token');
+                        const response = await fetch(`${this.API_BASE}/api/admin/users/${userId}/toggle-active/`, {
+                            method: 'PUT',
+                            headers: {
+                                'Authorization': `Bearer ${token}`
+                            }
+                        });
+
+                        if (response.ok) {
+                            this.showToast('success', 'تم بنجاح', 'تم تحديث حالة المستخدم');
+                            this.loadUsers(this.currentPage);
+                        } else {
+                            throw new Error('فشل في تحديث حالة المستخدم');
+                        }
+                    } catch (error) {
+                        this.showToast('error', 'خطأ', error.message);
+                    }
+                });
+            }
+
+            async handleCreateDoctor(e) {
+                e.preventDefault();
+                
+                const formData = {
+                    name: document.getElementById('doctorName').value,
+                    email: document.getElementById('doctorEmail').value,
+                    password: document.getElementById('doctorPassword').value,
+                    specialty: document.getElementById('doctorSpecialty').value,
+                    license: document.getElementById('doctorLicense').value,
+                    notes: document.getElementById('doctorNotes').value,
+                    role: 'user'
+                };
+
+                // التحقق من صحة البريد الإلكتروني للطبيب
+                if (!formData.email.endsWith('@doctor.com')) {
+                    this.showToast('error', 'خطأ', 'يجب أن ينتهي بريد الطبيب بـ @doctor.com');
+                    return;
+                }
+
+                try {
+                    const token = localStorage.getItem('token');
+                    const response = await fetch(`${this.API_BASE}/api/admin/create-doctor/`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(formData)
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        this.showToast('success', 'تم بنجاح', 'تم إنشاء حساب الطبيب بنجاح');
+                        document.getElementById('createDoctorForm').reset();
+                        this.loadRecentAccounts();
+                    } else {
+                        throw new Error(data.message || 'فشل في إنشاء حساب الطبيب');
+                    }
+                } catch (error) {
+                    this.showToast('error', 'خطأ', error.message);
+                }
+            }
+
+            async handleCreateEngineer(e) {
+                e.preventDefault();
+                
+                const formData = {
+                    name: document.getElementById('engineerName').value,
+                    email: document.getElementById('engineerEmail').value,
+                    password: document.getElementById('engineerPassword').value,
+                    specialty: document.getElementById('engineerSpecialty').value,
+                    notes: document.getElementById('engineerNotes').value,
+                    role: 'engineer'
+                };
+
+                // التحقق من صحة البريد الإلكتروني للمهندس
+                if (!formData.email.endsWith('@engineer.com')) {
+                    this.showToast('error', 'خطأ', 'يجب أن ينتهي بريد المهندس بـ @engineer.com');
+                    return;
+                }
+
+                try {
+                    const token = localStorage.getItem('token');
+                    const response = await fetch(`${this.API_BASE}/api/admin/create-doctor/`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(formData)
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        this.showToast('success', 'تم بنجاح', 'تم إنشاء حساب المهندس بنجاح');
+                        document.getElementById('createEngineerForm').reset();
+                        this.loadRecentAccounts();
+                    } else {
+                        throw new Error(data.message || 'فشل في إنشاء حساب المهندس');
+                    }
+                } catch (error) {
+                    this.showToast('error', 'خطأ', error.message);
+                }
+            }
+
+            async loadRecentAccounts() {
+                try {
+                    const token = localStorage.getItem('token');
+                    const response = await fetch(`${this.API_BASE}/api/admin/recent-doctors/?limit=10`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+
+                    if (response.ok) {
+                        const accounts = await response.json();
+                        const tbody = document.getElementById('recentAccountsBody');
+                        
+                        if (accounts.length === 0) {
+                            tbody.innerHTML = `
+                                <tr>
+                                    <td colspan="5" class="text-center py-8 text-gray-500">لا توجد حسابات منشأة حديثاً</td>
+                                </tr>
+                            `;
+                            return;
+                        }
+
+                        tbody.innerHTML = accounts.map(account => `
+                            <tr class="table-row">
+                                <td class="py-4 px-6 text-sm text-gray-800 dark:text-white">${account.name}</td>
+                                <td class="py-4 px-6 text-sm text-gray-600 dark:text-gray-300">${account.email}</td>
+                                <td class="py-4 px-6">
+                                    <span class="px-2 py-1 text-xs rounded-full ${account.email.includes('@engineer.') ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'}">
+                                        ${account.email.includes('@engineer.') ? 'مهندس' : 'طبيب'}
+                                    </span>
+                                </td>
+                                <td class="py-4 px-6 text-sm text-gray-600 dark:text-gray-300">${account.specialty || 'غير محدد'}</td>
+                                <td class="py-4 px-6 text-sm text-gray-600 dark:text-gray-300">${this.formatDate(account.created_at)}</td>
+                            </tr>
+                        `).join('');
+                    }
+                } catch (error) {
+                    console.error('Error loading recent accounts:', error);
+                }
+            }
+
+            async loadUsersForNotifications() {
+                try {
+                    const token = localStorage.getItem('token');
+                    const response = await fetch(`${this.API_BASE}/api/admin/users/?limit=100`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        const selectElement = document.getElementById('notificationUserId');
+                        
+                        // Clear existing options except the first one
+                        while (selectElement.options.length > 1) {
+                            selectElement.remove(1);
+                        }
+                        
+                        // Add user options
+                        data.users.forEach(user => {
+                            const option = document.createElement('option');
+                            option.value = user.id;
+                            option.textContent = `${user.name} (${user.email})`;
+                            selectElement.appendChild(option);
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error loading users for notifications:', error);
+                }
+            }
+
+            async handleCreateNotification(e) {
+                e.preventDefault();
+                
+                const formData = {
+                    user_id: document.getElementById('notificationUserId').value || null,
+                    title: document.getElementById('notificationTitle').value,
+                    message: document.getElementById('notificationMessage').value,
+                    type: document.getElementById('notificationType').value,
+                    related_id: document.getElementById('notificationRelatedId').value || null
+                };
+
+                try {
+                    const token = localStorage.getItem('token');
+                    const response = await fetch(`${this.API_BASE}/api/notifications/`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(formData)
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        this.showToast('success', 'تم بنجاح', 'تم إنشاء الإشعار بنجاح');
+                        document.getElementById('createNotificationForm').reset();
+                        this.loadNotifications();
+                    } else {
+                        throw new Error(data.message || 'فشل في إنشاء الإشعار');
+                    }
+                } catch (error) {
+                    this.showToast('error', 'خطأ', error.message);
+                }
+            }
+async loadNotifications() {
+    try {
+        const token = localStorage.getItem('token');
+        const filter = document.getElementById('notificationFilter').value;
+        const filterParam = filter ? `&type=${filter}` : '';
+        
+        const response = await fetch(`${this.API_BASE}/api/notifications/?limit=10${filterParam}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (response.ok) {
+            const notifications = await response.json();
+            this.renderNotifications(notifications);
+        }
+    } catch (error) {
+        console.error('Error loading notifications:', error);
+    }
+}
+renderNotifications(notifications) {
+    const container = document.getElementById('recentNotifications');
+    
+    if (notifications.length === 0) {
+        container.innerHTML = '<p class="text-gray-500 text-center py-8">لا توجد إشعارات</p>';
+        return;
+    }
+
+    container.innerHTML = notifications.map(notification => `
+        <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-xl border-l-4 ${this.getNotificationBorderColor(notification.type)}">
+            <div class="flex items-start justify-between mb-2">
+                <h4 class="font-semibold text-gray-800 dark:text-white">${notification.title}</h4>
+                <span class="px-2 py-1 text-xs rounded-full ${this.getNotificationBadgeColor(notification.type)}">
+                    ${this.getNotificationTypeText(notification.type)}
+                </span>
+            </div>
+            <p class="text-sm text-gray-600 dark:text-gray-300 mb-2">${notification.message}</p>
+            <div class="flex items-center justify-between text-xs text-gray-500">
+                <span>${notification.user_id ? `لمستخدم: ${notification.user_name}` : 'إشعار عام'}</span>
+                <span>${this.formatDate(notification.created_at)}</span>
+            </div>
+        </div>
+    `).join('');
+}
+
+            async loadNotifications() {
+    try {
+        const token = localStorage.getItem('token');
+        const filter = document.getElementById('notificationFilter').value;
+        const filterParam = filter ? `&type_filter=${filter}` : '';
+        
+        const response = await fetch(`${this.API_BASE}/api/admin/notifications/?limit=10${filterParam}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (response.ok) {
+            const notifications = await response.json();
+            this.renderNotifications(notifications);
+        } else {
+            throw new Error('فشل في تحميل الإشعارات');
+        }
+    } catch (error) {
+        console.error('Error loading notifications:', error);
+        this.showToast('error', 'خطأ', 'فشل في تحميل الإشعارات');
+    }
+}
+
+            renderNotifications(notifications) {
+    const container = document.getElementById('recentNotifications');
+    
+    if (notifications.length === 0) {
+        container.innerHTML = '<p class="text-gray-500 text-center py-8">لا توجد إشعارات</p>';
+        return;
+    }
+
+    container.innerHTML = notifications.map(notification => `
+        <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-xl border-l-4 ${this.getNotificationBorderColor(notification.type)}">
+            <div class="flex items-start justify-between mb-2">
+                <h4 class="font-semibold text-gray-800 dark:text-white">${notification.title}</h4>
+                <span class="px-2 py-1 text-xs rounded-full ${this.getNotificationBadgeColor(notification.type)}">
+                    ${this.getNotificationTypeText(notification.type)}
+                </span>
+            </div>
+            <p class="text-sm text-gray-600 dark:text-gray-300 mb-2">${notification.message}</p>
+            <div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+                <span>${notification.user_id ? `لمستخدم: ${notification.user_name || 'غير معروف'}` : 'إشعار عام'}</span>
+                <span>${this.formatDate(notification.created_at)}</span>
+            </div>
+        </div>
+    `).join('');
+}
+
+            getNotificationBorderColor(type) {
+                const colors = {
+                    'general': 'border-indigo-500',
+                    'warning': 'border-yellow-500',
+                    'important': 'border-orange-500',
+                    'urgent': 'border-red-500'
+                };
+                return colors[type] || 'border-gray-500';
+            }
+
+            getNotificationBadgeColor(type) {
+                const colors = {
+                    'general': 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200',
+                    'warning': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+                    'important': 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
+                    'urgent': 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                };
+                return colors[type] || 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200';
+            }
+
+            getNotificationTypeText(type) {
+                const texts = {
+                    'general': 'عام',
+                    'warning': 'تحذير',
+                    'important': 'مهم',
+                    'urgent': 'عاجل'
+                };
+                return texts[type] || 'غير محدد';
+            }
+
+            async loadResults() {
+                try {
+                    const token = localStorage.getItem('token');
+                    const response = await fetch(`${this.API_BASE}/api/admin/results/?limit=50`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+
+                    if (response.ok) {
+                        const results = await response.json();
+                        const tbody = document.getElementById('resultsTableBody');
+                        
+                        if (results.length === 0) {
+                            tbody.innerHTML = `
+                                <tr>
+                                    <td colspan="6" class="text-center py-8 text-gray-500">لا توجد نتائج</td>
+                                </tr>
+                            `;
+                            return;
+                        }
+
+                        tbody.innerHTML = results.map(result => `
+                            <tr class="table-row">
+                                <td class="py-4 px-6 text-sm text-gray-800 dark:text-white">${result.id}</td>
+                                <td class="py-4 px-6 text-sm text-gray-600 dark:text-gray-300">${result.original_filename}</td>
+                                <td class="py-4 px-6 text-sm text-gray-600 dark:text-gray-300">${result.user_name || 'غير محدد'}</td>
+                                <td class="py-4 px-6">
+                                    <span class="px-2 py-1 text-xs rounded-full ${result.diagnosis === 'cardiomegaly' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}">
+                                        ${result.diagnosis === 'cardiomegaly' ? 'إيجابي' : 'سلبي'}
+                                    </span>
+                                </td>
+                                <td class="py-4 px-6 text-sm text-gray-600 dark:text-gray-300">${result.confidence.toFixed(2)}%</td>
+                                <td class="py-4 px-6 text-sm text-gray-600 dark:text-gray-300">${this.formatDate(result.created_at)}</td>
+                            </tr>
+                        `).join('');
+                    }
+                } catch (error) {
+                    console.error('Error loading results:', error);
+                }
+            }
+
+            async loadSystemStatus() {
+                try {
+                    const token = localStorage.getItem('token');
+                    const response = await fetch(`${this.API_BASE}/api/admin/system-status/`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        
+                        document.getElementById('systemPerformance').innerHTML = `
+                            <div class="space-y-4">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-gray-600 dark:text-gray-300">استخدام المعالج</span>
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-24 h-2 bg-gray-200 dark:bg-gray-600 rounded-full">
+                                            <div class="h-full bg-primary rounded-full" style="width: ${data.cpu_usage || 0}%"></div>
+                                        </div>
+                                        <span class="text-sm text-gray-600 dark:text-gray-300">${data.cpu_usage || 0}%</span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-gray-600 dark:text-gray-300">استخدام الذاكرة</span>
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-24 h-2 bg-gray-200 dark:bg-gray-600 rounded-full">
+                                            <div class="h-full bg-secondary rounded-full" style="width: ${data.memory_usage || 0}%"></div>
+                                        </div>
+                                        <span class="text-sm text-gray-600 dark:text-gray-300">${data.memory_usage || 0}%</span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-gray-600 dark:text-gray-300">مساحة القرص</span>
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-24 h-2 bg-gray-200 dark:bg-gray-600 rounded-full">
+                                            <div class="h-full bg-warning rounded-full" style="width: ${data.disk_usage || 0}%"></div>
+                                        </div>
+                                        <span class="text-sm text-gray-600 dark:text-gray-300">${data.disk_usage || 0}%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                } catch (error) {
+                    console.error('Error loading system status:', error);
+                }
+            }
+
+            async loadActivity() {
+                try {
+                    const token = localStorage.getItem('token');
+                    const response = await fetch(`${this.API_BASE}/api/admin/activity/?limit=50`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+
+                    if (response.ok) {
+                        const activities = await response.json();
+                        const container = document.getElementById('activityList');
+                        
+                        if (activities.length === 0) {
+                            container.innerHTML = '<p class="text-gray-500 text-center">لا توجد نشاطات</p>';
+                            return;
+                        }
+
+                        container.innerHTML = activities.map(activity => `
+                            <div class="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
+                                <div class="w-10 h-10 bg-primary bg-opacity-10 rounded-xl flex items-center justify-center">
+                                    <i class="fas fa-${this.getActivityIcon(activity.type)} text-primary"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="font-medium text-gray-800 dark:text-white">${activity.description}</p>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">
+                                        ${activity.user_name || 'النظام'} • ${this.formatDate(activity.timestamp)}
+                                    </p>
+                                </div>
+                            </div>
+                        `).join('');
+                    }
+                } catch (error) {
+                    console.error('Error loading activity:', error);
+                }
+            }
+
+            async loadDatabaseStats() {
+                try {
+                    const token = localStorage.getItem('token');
+                    const response = await fetch(`${this.API_BASE}/api/admin/database/stats/`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        
+                        document.getElementById('databaseStats').innerHTML = `
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
+                                    <p class="text-2xl font-bold text-primary">${data.database_size_mb} MB</p>
+                                    <p class="text-sm text-gray-600 dark:text-gray-300">حجم قاعدة البيانات</p>
+                                </div>
+                                <div class="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
+                                    <p class="text-2xl font-bold text-secondary">${data.users_count}</p>
+                                    <p class="text-sm text-gray-600 dark:text-gray-300">المستخدمين</p>
+                                </div>
+                                <div class="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
+                                    <p class="text-2xl font-bold text-success">${data.results_count}</p>
+                                    <p class="text-sm text-gray-600 dark:text-gray-300">النتائج</p>
+                                </div>
+                                <div class="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
+                                    <p class="text-2xl font-bold text-warning">${data.activity_logs_count}</p>
+                                    <p class="text-sm text-gray-600 dark:text-gray-300">سجلات النشاط</p>
+                                </div>
+                            </div>
+                        `;
+                    }
+                } catch (error) {
+                    console.error('Error loading database stats:', error);
+                }
+            }
+
+            async backupDatabase() {
+                this.showConfirmDialog('هل تريد إنشاء نسخة احتياطية من قاعدة البيانات؟', async () => {
+                    try {
+                        const token = localStorage.getItem('token');
+                        const response = await fetch(`${this.API_BASE}/api/admin/database/backup/`, {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `Bearer ${token}`
+                            }
+                        });
+
+                        const data = await response.json();
+
+                        if (data.success) {
+                            this.showToast('success', 'تم بنجاح', 'تم إنشاء النسخة الاحتياطية بنجاح');
+                        } else {
+                            throw new Error(data.message || 'فشل في إنشاء النسخة الاحتياطية');
+                        }
+                    } catch (error) {
+                        this.showToast('error', 'خطأ', error.message);
+                    }
+                });
+            }
+
+            async optimizeDatabase() {
+                this.showConfirmDialog('هل تريد تحسين قاعدة البيانات؟', async () => {
+                    try {
+                        const token = localStorage.getItem('token');
+                        const response = await fetch(`${this.API_BASE}/api/admin/database/optimize/`, {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `Bearer ${token}`
+                            }
+                        });
+
+                        const data = await response.json();
+
+                        if (data.success) {
+                            this.showToast('success', 'تم بنجاح', 'تم تحسين قاعدة البيانات بنجاح');
+                        } else {
+                            throw new Error(data.message || 'فشل في تحسين قاعدة البيانات');
+                        }
+                    } catch (error) {
+                        this.showToast('error', 'خطأ', error.message);
+                    }
+                });
+            }
+
+            async cleanupDatabase() {
+                this.showPromptDialog('كم يوم من البيانات تريد الاحتفاظ بها؟', '30', (days) => {
+                    if (!days || isNaN(days)) return;
+                    
+                    this.showConfirmDialog(`هل تريد حذف البيانات الأقدم من ${days} يوم؟`, async () => {
+                        try {
+                            const token = localStorage.getItem('token');
+                            const formData = new FormData();
+                            formData.append('days', days);
+                            
+                            const response = await fetch(`${this.API_BASE}/api/admin/database/cleanup/`, {
+                                method: 'POST',
+                                headers: {
+                                    'Authorization': `Bearer ${token}`
+                                },
+                                body: formData
+                            });
+
+                            const data = await response.json();
+
+                            if (data.success) {
+                                this.showToast('success', 'تم بنجاح', 'تم تنظيف قاعدة البيانات بنجاح');
+                            } else {
+                                throw new Error(data.message || 'فشل في تنظيف قاعدة البيانات');
+                            }
+                        } catch (error) {
+                            this.showToast('error', 'خطأ', error.message);
+                        }
+                    });
+                });
+            }
+
+            async handleSqlQuery(e) {
+                e.preventDefault();
+                
+                const query = document.getElementById('sqlQuery').value.trim();
+                if (!query) {
+                    this.showAlert('يرجى إدخال استعلام SQL');
+                    return;
+                }
+
+                try {
+                    const token = localStorage.getItem('token');
+                    const formData = new FormData();
+                    formData.append('query', query);
+                    
+                    const response = await fetch(`${this.API_BASE}/api/admin/database/execute-sql/`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: formData
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        const resultsDiv = document.getElementById('sqlResults');
+                        const resultsContent = document.getElementById('sqlResultsContent');
+                        
+                        if (data.query_type === 'SELECT') {
+                            resultsContent.textContent = JSON.stringify(data.results, null, 2);
+                        } else {
+                            resultsContent.textContent = data.message;
+                        }
+                        
+                        resultsDiv.classList.remove('hidden');
+                        this.showToast('success', 'تم بنجاح', 'تم تنفيذ الاستعلام بنجاح');
+                    } else {
+                        throw new Error(data.message || 'فشل في تنفيذ الاستعلام');
+                    }
+                } catch (error) {
+                    this.showToast('error', 'خطأ', error.message);
+                }
+            }
+
+            async exportResults() {
+                try {
+                    const token = localStorage.getItem('token');
+                    const response = await fetch(`${this.API_BASE}/api/admin/results/export/?format=csv`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+
+                    if (response.ok) {
+                        const blob = await response.blob();
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `results_${new Date().toISOString().split('T')[0]}.csv`;
+                        document.body.appendChild(a);
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+                        document.body.removeChild(a);
+                        
+                        this.showToast('success', 'تم بنجاح', 'تم تصدير النتائج بنجاح');
+                    } else {
+                        throw new Error('فشل في تصدير النتائج');
+                    }
+                } catch (error) {
+                    this.showToast('error', 'خطأ', error.message);
+                }
+            }
+
+            // Contact Messages Methods
+            async loadContactMessages(page = 0) {
+                try {
+                    const token = localStorage.getItem('token');
+                    const formType = document.getElementById('messageTypeFilter').value;
+                    const status = document.getElementById('messageStatusFilter').value;
+                    
+                    let url = `${this.API_BASE}/api/admin/contact-messages/?limit=${this.pageSize}&offset=${page * this.pageSize}`;
+                    if (formType) url += `&form_type=${formType}`;
+                    if (status) url += `&status=${status}`;
+                    
+                    const response = await fetch(url, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+
+                    if (response.ok) {
+                        const messages = await response.json();
+                        this.renderContactMessagesTable(messages);
+                        document.getElementById('messagesCount').textContent = `عرض ${messages.length} رسالة`;
+                    }
+                } catch (error) {
+                    console.error('Error loading contact messages:', error);
+                    this.showToast('error', 'خطأ', 'فشل في تحميل رسائل التواصل');
+                }
+            }
+
+            renderContactMessagesTable(messages) {
+                const tbody = document.getElementById('contactMessagesTableBody');
+                
+                if (messages.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="8" class="text-center py-8 text-gray-500">لا توجد رسائل</td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                tbody.innerHTML = messages.map(message => `
+                    <tr class="table-row ${message.status === 'new' ? 'unread-row' : 'read-row'}">
+                        <td class="py-4 px-6 text-sm text-gray-800 dark:text-white font-semibold">${message.id}</td>
+                        <td class="py-4 px-6 text-sm text-gray-800 dark:text-white font-medium">${message.name}</td>
+                        <td class="py-4 px-6 text-sm text-gray-600 dark:text-gray-300">${message.email}</td>
+                        <td class="py-4 px-6 text-sm text-gray-800 dark:text-white font-medium">${message.subject}</td>
+                        <td class="py-4 px-6">
+                            <span class="px-3 py-1 text-xs rounded-full font-medium ${message.form_type === 'doctor' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'}">
+                                ${message.form_type === 'doctor' ? 'طبيب' : 'عام'}
+                            </span>
+                        </td>
+                        <td class="py-4 px-6">
+                            <span class="px-3 py-1 text-xs rounded-full font-medium ${this.getStatusColor(message.status)}">
+                                <i class="fas fa-${message.status === 'new' ? 'envelope' : 'envelope-open'} ml-1"></i>
+                                ${this.getStatusText(message.status)}
+                            </span>
+                        </td>
+                        <td class="py-4 px-6 text-sm text-gray-600 dark:text-gray-300">${this.formatDate(message.created_at)}</td>
+                        <td class="py-4 px-6 text-center">
+                            <div class="flex justify-center gap-2">
+                                <button onclick="admin.viewMessage(${message.id})" class="text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900 p-2 rounded-lg transition-colors" title="عرض التفاصيل">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                ${message.status === 'new' ? 
+                                    `<button onclick="admin.markMessageAsRead(${message.id})" class="text-green-600 hover:bg-green-50 dark:hover:bg-green-900 p-2 rounded-lg transition-colors" title="تحديد كمقروءة">
+                                        <i class="fas fa-check"></i>
+                                    </button>` : ''
+                                }
+                                <button onclick="admin.deleteMessage(${message.id})" class="text-red-600 hover:bg-red-50 dark:hover:bg-red-900 p-2 rounded-lg transition-colors" title="حذف">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            getStatusColor(status) {
+                const colors = {
+                    'new': 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+                    'read': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                };
+                return colors[status] || 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200';
+            }
+
+            getStatusText(status) {
+                const texts = {
+                    'new': 'غير مقروءة',
+                    'read': 'مقروءة'
+                };
+                return texts[status] || 'غير محدد';
+            }
+
+            async viewMessage(messageId) {
+                try {
+                    const token = localStorage.getItem('token');
+                    const response = await fetch(`${this.API_BASE}/api/admin/contact-messages/${messageId}/`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+
+                    if (response.ok) {
+                        const message = await response.json();
+                        this.showMessageModal(message);
+                    }
+                } catch (error) {
+                    console.error('Error loading message details:', error);
+                    this.showToast('error', 'خطأ', 'فشل في تحميل تفاصيل الرسالة');
+                }
+            }
+
+            showMessageModal(message) {
+                const detailsContainer = document.getElementById('messageDetails');
+                detailsContainer.innerHTML = `
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">الاسم:</label>
+                            <p class="text-gray-800 dark:text-white font-medium">${message.name}</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">البريد الإلكتروني:</label>
+                            <p class="text-gray-800 dark:text-white">${message.email}</p>
+                        </div>
+                        <div class="col-span-2">
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">الموضوع:</label>
+                            <p class="text-gray-800 dark:text-white font-medium">${message.subject}</p>
+                        </div>
+                        <div class="col-span-2">
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">الرسالة:</label>
+                            <div class="bg-gray-50 dark:bg-gray-700 rounded-xl p-4 border border-gray-200 dark:border-gray-600">
+                                <p class="text-gray-800 dark:text-white whitespace-pre-wrap leading-relaxed">${message.message}</p>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">النوع:</label>
+                            <span class="px-3 py-1 text-xs rounded-full ${message.form_type === 'doctor' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}">
+                                ${message.form_type === 'doctor' ? 'طبيب' : 'عام'}
+                            </span>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">حالة القراءة:</label>
+                            <span class="px-3 py-1 text-xs rounded-full ${this.getStatusColor(message.status)}">
+                                <i class="fas fa-${message.status === 'new' ? 'envelope' : 'envelope-open'} ml-1"></i>
+                                ${this.getStatusText(message.status)}
+                            </span>
+                        </div>
+                        <div class="col-span-2">
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">تاريخ الإرسال:</label>
+                            <p class="text-gray-800 dark:text-white">${this.formatDate(message.created_at)}</p>
+                        </div>
+                    </div>
+                `;
+
+                // Store current message ID for actions
+                this.currentMessageId = message.id;
+                this.currentMessageStatus = message.status;
+
+                // Show modal
+                document.getElementById('messageModal').classList.remove('hidden');
+                setTimeout(() => {
+                    document.getElementById('messageModalContent').classList.remove('scale-95');
+                    document.getElementById('messageModalContent').classList.add('scale-100');
+                }, 10);
+            }
+
+            hideMessageModal() {
+                document.getElementById('messageModalContent').classList.add('scale-95');
+                document.getElementById('messageModalContent').classList.remove('scale-100');
+                setTimeout(() => {
+                    document.getElementById('messageModal').classList.add('hidden');
+                }, 300);
+            }
+
+            async markMessageAsRead(messageId = null) {
+                const id = messageId || this.currentMessageId;
+                if (!id) return;
+                
+                try {
+                    const token = localStorage.getItem('token');
+                    const formData = new FormData();
+                    formData.append('status', 'read');
+                    
+                    const response = await fetch(`${this.API_BASE}/api/admin/contact-messages/${id}/status/`, {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: formData
+                    });
+
+                    if (response.ok) {
+                        this.showToast('success', 'تم بنجاح', 'تم تحديث حالة الرسالة');
+                        if (messageId) {
+                            // Called from table button
+                            this.loadContactMessages();
+                        } else {
+                            // Called from modal
+                            this.hideMessageModal();
+                            this.loadContactMessages();
+                        }
+                    } else {
+                        throw new Error('فشل في تحديث حالة الرسالة');
+                    }
+                } catch (error) {
+                    this.showToast('error', 'خطأ', error.message);
+                }
+            }
+
+            async deleteMessage(messageId = null) {
+                const id = messageId || this.currentMessageId;
+                if (!id) return;
+                
+                this.showConfirmDialog('هل أنت متأكد من حذف هذه الرسالة؟\nهذا الإجراء لا يمكن التراجع عنه.', async () => {
+                    try {
+                        const token = localStorage.getItem('token');
+                        const response = await fetch(`${this.API_BASE}/api/admin/contact-messages/${id}/`, {
+                            method: 'DELETE',
+                            headers: {
+                                'Authorization': `Bearer ${token}`
+                            }
+                        });
+
+                        if (response.ok) {
+                            this.showToast('success', 'تم بنجاح', 'تم حذف الرسالة');
+                            if (messageId) {
+                                // Called from table button
+                                this.loadContactMessages();
+                            } else {
+                                // Called from modal
+                                this.hideMessageModal();
+                                this.loadContactMessages();
+                            }
+                        } else {
+                            const error = await response.json();
+                            throw new Error(error.detail || 'فشل في حذف الرسالة');
+                        }
+                    } catch (error) {
+                        this.showToast('error', 'خطأ', error.message);
+                    }
+                });
+            }
+
+            getActivityIcon(type) {
+                const icons = {
+                    'login': 'sign-in-alt',
+                    'create_doctor': 'user-plus',
+                    'create_engineer': 'cogs',
+                    'view_users': 'users',
+                    'update_user': 'user-edit',
+                    'delete_user': 'user-minus',
+                    'analysis': 'chart-bar',
+                    'database_backup': 'download',
+                    'database_optimize': 'tools',
+                    'database_cleanup': 'broom',
+                    'create_notification': 'bell'
+                };
+                return icons[type] || 'info-circle';
+            }
+
+            formatDate(dateString) {
+                if (!dateString) return 'غير محدد';
+                const date = new Date(dateString);
+                return date.toLocaleDateString('ar-SA', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            }
+
+            // Custom Dialog Functions
+            showConfirmDialog(message, onConfirm) {
+                const modal = document.createElement('div');
+                modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm';
+                modal.innerHTML = `
+                    <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-2xl max-w-md w-full mx-4 transform transition-all duration-300 scale-95">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-10 h-10 bg-orange-100 dark:bg-orange-900 rounded-full flex items-center justify-center">
+                                <i class="fas fa-question-circle text-orange-600 dark:text-orange-400"></i>
+                            </div>
+                            <h3 class="text-lg font-semibold text-gray-800 dark:text-white">تأكيد العملية</h3>
+                        </div>
+                        <p class="text-gray-700 dark:text-gray-300 mb-6 leading-relaxed">${message}</p>
+                        <div class="flex justify-end space-x-3 gap-3">
+                            <button class="cancel-btn px-4 py-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-colors">إلغاء</button>
+                            <button class="confirm-btn px-4 py-2 bg-primary hover:bg-purple-600 text-white rounded-xl transition-colors">تأكيد</button>
+                        </div>
+                    </div>
+                `;
+                
+                // Add animation
+                document.body.appendChild(modal);
+                setTimeout(() => {
+                    modal.querySelector('.bg-white, .dark\\:bg-gray-800').classList.remove('scale-95');
+                    modal.querySelector('.bg-white, .dark\\:bg-gray-800').classList.add('scale-100');
+                }, 10);
+                
+                modal.querySelector('.cancel-btn').onclick = () => {
+                    modal.remove();
+                };
+                
+                modal.querySelector('.confirm-btn').onclick = () => {
+                    modal.remove();
+                    onConfirm();
+                };
+                
+                modal.onclick = (e) => {
+                    if (e.target === modal) {
+                        modal.remove();
+                    }
+                };
+            }
+
+            showAlert(message) {
+                const modal = document.createElement('div');
+                modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm';
+                modal.innerHTML = `
+                    <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-2xl max-w-md w-full mx-4 transform transition-all duration-300 scale-95">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+                                <i class="fas fa-info-circle text-blue-600 dark:text-blue-400"></i>
+                            </div>
+                            <h3 class="text-lg font-semibold text-gray-800 dark:text-white">تنبيه</h3>
+                        </div>
+                        <p class="text-gray-700 dark:text-gray-300 mb-6 leading-relaxed">${message}</p>
+                        <div class="flex justify-end">
+                            <button class="ok-btn px-4 py-2 bg-primary hover:bg-purple-600 text-white rounded-xl transition-colors">موافق</button>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(modal);
+                setTimeout(() => {
+                    modal.querySelector('.bg-white, .dark\\:bg-gray-800').classList.remove('scale-95');
+                    modal.querySelector('.bg-white, .dark\\:bg-gray-800').classList.add('scale-100');
+                }, 10);
+                
+                modal.querySelector('.ok-btn').onclick = () => {
+                    modal.remove();
+                };
+                
+                modal.onclick = (e) => {
+                    if (e.target === modal) {
+                        modal.remove();
+                    }
+                };
+            }
+
+            showPromptDialog(message, defaultValue, callback) {
+                const modal = document.createElement('div');
+                modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm';
+                modal.innerHTML = `
+                    <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-2xl max-w-md w-full mx-4 transform transition-all duration-300 scale-95">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-10 h-10 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
+                                <i class="fas fa-keyboard text-green-600 dark:text-green-400"></i>
+                            </div>
+                            <h3 class="text-lg font-semibold text-gray-800 dark:text-white">إدخال قيمة</h3>
+                        </div>
+                        <p class="text-gray-700 dark:text-gray-300 mb-4 leading-relaxed">${message}</p>
+                        <input type="text" class="input-field w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-800 dark:text-white text-base mb-6" value="${defaultValue}">
+                        <div class="flex justify-end space-x-3 gap-3">
+                            <button class="cancel-btn px-4 py-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-colors">إلغاء</button>
+                            <button class="ok-btn px-4 py-2 bg-primary hover:bg-purple-600 text-white rounded-xl transition-colors">موافق</button>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(modal);
+                const inputField = modal.querySelector('.input-field');
+                
+                setTimeout(() => {
+                    modal.querySelector('.bg-white, .dark\\:bg-gray-800').classList.remove('scale-95');
+                    modal.querySelector('.bg-white, .dark\\:bg-gray-800').classList.add('scale-100');
+                    inputField.focus();
+                    inputField.select();
+                }, 10);
+                
+                modal.querySelector('.cancel-btn').onclick = () => {
+                    modal.remove();
+                };
+                
+                modal.querySelector('.ok-btn').onclick = () => {
+                    const value = inputField.value;
+                    modal.remove();
+                    callback(value);
+                };
+                
+                inputField.onkeydown = (e) => {
+                    if (e.key === 'Enter') {
+                        const value = inputField.value;
+                        modal.remove();
+                        callback(value);
+                    }
+                };
+                
+                modal.onclick = (e) => {
+                    if (e.target === modal) {
+                        modal.remove();
+                    }
+                };
+            }
+
+            showToast(type, title, message) {
+                const toast = document.getElementById('toast');
+                const toastIcon = document.getElementById('toastIcon');
+                const toastTitle = document.getElementById('toastTitle');
+                const toastMessage = document.getElementById('toastMessage');
+
+                // Set content
+                toastTitle.textContent = title;
+                toastMessage.textContent = message;
+
+                // Set style based on type
+                const colors = {
+                    success: { bg: 'bg-green-500', icon: 'fa-check' },
+                    error: { bg: 'bg-red-500', icon: 'fa-times' },
+                    warning: { bg: 'bg-yellow-500', icon: 'fa-exclamation-triangle' }
+                };
+
+                const color = colors[type] || colors.success;
+                toastIcon.className = `w-6 h-6 ${color.bg} rounded-full flex items-center justify-center`;
+                toastIcon.innerHTML = `<i class="fas ${color.icon} text-white text-sm"></i>`;
+
+                // Show toast
+                toast.classList.remove('-translate-x-full');
+                toast.classList.add('translate-x-0');
+
+                // Hide after 5 seconds
+                setTimeout(() => {
+                    toast.classList.remove('translate-x-0');
+                    toast.classList.add('-translate-x-full');
+                }, 5000);
+            }
+        }
+
+        // Initialize the admin dashboard
+        const admin = new AdminDashboard();
+    </script>
+</body>
+</html>

@@ -1,0 +1,226 @@
+{
+  "Navbar": {
+    "hero": "Home",
+    "about": "About",
+    "experience": "Experience",
+    "projects": "Projects",
+    "research": "Research",
+    "contact": "Contact",
+    "lang": "العربية"
+  },
+  "Footer": {
+    "rights": "All rights reserved.",
+    "brand_desc": "Software Engineer & Flutter Developer building elegant digital experiences.",
+    "nav_title": "Navigation",
+    "connect_title": "Connect",
+    "nav_hero": "Home",
+    "nav_about": "About",
+    "nav_experience": "Experience",
+    "nav_projects": "Projects",
+    "nav_contact": "Contact"
+  },
+  "Hero": {
+    "name": "Omar Al-Ghafri",
+    "title": "Network & Security Engineer | Full-Stack Developer",
+    "summary": "Motivated Network & Security student with expertise in CCNA, Microsoft Azure, and Deep Learning. President of the IT Club and Ministry-funded researcher published in IEEE conferences.",
+    "cta_projects": "View Projects",
+    "cta_contact": "Contact Me",
+    "welcome": "Welcome to my portfolio",
+    "status": "Open to work",
+    "scroll": "Scroll"
+  },
+  "About": {
+    "title": "About Me",
+    "bio": "I am a dedicated Network & Security student at Arab Open University with a strong background in Network Engineering (CCNA Certified), Cloud Computing (Azure Certified), and Full-Stack Development. I have a proven track record in academic leadership and contribution to medical AI research with published IEEE papers.",
+    "skills": "Technical Skills",
+    "education_title": "Education",
+    "university": "Arab Open University",
+    "degree": "Bachelor's in Network & Security",
+    "who_i_am": "Who I am",
+    "bio_title": "Bio",
+    "proficiency": "Proficiency",
+    "location": "Muscat, Oman",
+    "it_club": "IT Club President",
+    "research_pi": "Research PI",
+    "langs": "En & Ar"
+  },
+  "Experience": {
+    "title": "Experience & Leadership",
+    "journey": "My journey",
+    "items": {
+      "exp1": {
+        "role": "IT Technical Support Intern",
+        "company": "Arab Open University",
+        "period": "March 2025 - May 2025",
+        "desc": "Provided technical troubleshooting for hardware/software, maintained campus network using CCNA principles, and managed user system administration."
+      },
+      "exp2": {
+        "role": "IT Society Club President",
+        "company": "Arab Open University",
+        "period": "2023 - 2024",
+        "desc": "Led student activities, organized technical workshops, and fostered a collaborative tech community on campus."
+      },
+      "exp3": {
+        "role": "Academic Teaching Assistant / PASS Tutor",
+        "company": "Arab Open University",
+        "period": "2023 - 2025",
+        "desc": "Provided academic tutoring for modules like Java OOP, Cisco Networking (CCNA), Cyber Security, and Web Technologies."
+      },
+      "exp4": {
+        "role": "IT Support Intern",
+        "company": "Nama Water Services",
+        "period": "Summer 2023",
+        "desc": "Assisted the IT department in managing infrastructure and providing user support."
+      }
+    }
+  },
+  "Certifications": {
+    "title": "Certifications",
+    "items": [
+      {
+        "name": "CCNAv7: Enterprise Networking, Security, and Automation",
+        "issuer": "Cisco",
+        "date": "Jul 2024"
+      },
+      {
+        "name": "CCNAv7: Switching, Routing, and Wireless Essentials",
+        "issuer": "Cisco",
+        "date": "Jul 2024"
+      },
+      {
+        "name": "CCNAv7: Introduction to Networks",
+        "issuer": "Cisco",
+        "date": "Dec 2023"
+      },
+      {
+        "name": "Azure Cloud Engineer Dual Certification",
+        "issuer": "SITER (Society of IT Engineers)",
+        "date": "Jul 2024"
+      },
+      {
+        "name": "Cyber Security Attack Techniques",
+        "issuer": "Edraak.org",
+        "date": "2023"
+      },
+      {
+        "name": "IEEE Certified in IT & Electronics Engineering",
+        "issuer": "IEEE",
+        "date": "2023"
+      }
+    ]
+  },
+  "Research": {
+    "title": "Research & Grants",
+    "academic_sub": "Academic Contributions",
+    "grant_title": "Research Grant",
+    "grant_desc": "Principal Investigator for 'Automated Detection of Cardiomegaly Disease Using Deep Neural Networks Based on CXR Image' - Funded by Ministry of Higher Education (1,500 OMR).",
+    "grant_quote": "Recognized for innovative application of Deep Learning in the medical field by the Ministry of Higher Education, Research and Innovation.",
+    "publications_title": "Publications",
+    "items": [
+      {
+        "title": "Cardiomegaly Detection from Chest X-Rays Using EfficientNetB7: A Deep Learning Approach",
+        "venue": "IEEE 6th ROMA 2025"
+      },
+      {
+        "title": "Cardiomegaly Detection from Chest X-Rays Using InceptionV3: A Deep Learning Approach",
+        "venue": "IEEE 6th ROMA 2025"
+      },
+      {
+        "title": "Deep Learning-Based Cardiomegaly Detection from Chest X-Rays Using DenseNet-169",
+        "venue": "IEEE/ICCA'2025"
+      }
+    ]
+  },
+  "Projects": {
+    "title": "Projects",
+    "preview_desc": "Take a look at a selection of my mobile, web, and AI development projects, featuring modern layouts and seamless interactions.",
+    "view_all": "View All Projects",
+    "flutter": "Mobile Applications",
+    "web": "Web Applications",
+    "application_preview_title": "Application Preview",
+    "application_preview_desc": "Explore live previews of my applications below.",
+    "show_all_details": "Show all details",
+    "preview_disclaimer_title": "Notice Before Preview",
+    "preview_disclaimer_desc": "Please note that this preview is for demonstration and simulation purposes only:\n• It is recommended to view the site on a computer for the best experience.\n• Most features are disabled as it is in simulation mode.\n• This is not the final product; the original version may have specific rights or privacy protocols.\n• The goal is to showcase functionality and design for recruitment purposes.",
+    "preview_disclaimer_btn": "I Understand, Start Preview",
+    "coming_soon": "Coming Soon...",
+    "cardio_ai": "CardioAI",
+    "flutter_app": "Flutter App",
+    "back": "Back",
+    "tech_stack": "Technical Stack",
+    "close": "Close",
+    "launch_app": "Launch Live Preview",
+    "launch_web": "Launch Live Preview",
+    "cancel": "Cancel",
+    "website_preview_title": "Website Preview",
+    "website_preview_desc": "A comprehensive preview of the Cardio Website in your preferred language.",
+    "items": {
+      "apartment": {
+        "title": "Apartment Booking App",
+        "summary": "A comprehensive full-stack platform for seamless apartment discovery and secure booking.",
+        "desc": "An enterprise-grade real estate ecosystem designed to redefine the property rental experience. This platform integrates a high-performance Flutter mobile client with a robust FastAPI backend to handle complex booking lifecycles and secure data management.\n\n**🔍 Intelligent Discovery:**\n• **Smart Search:** Implements advanced geolocation-based filtering (price, rating, room count) with a 500ms debounced API interface.\n• **AI Recommendations:** A behavior-aware engine that classifies users (traveler, family, business) to provide personalized property suggestions.\n• **Interactive Mapping:** Full Google Maps integration with custom Haversine algorithms for distance-based sorting.\n\n**🛡️ Security Protocol:**\n• **Multi-Layer Encryption:** Combines AES-256-GCM field-level encryption with SQLCipher Transparent Data Encryption (TDE).\n• **Robust Auth:** JWT-based sessions with 30-day persistence and Bcrypt cost-factor 12 password hashing.\n\n**⚙️ Technical Excellence:**\n• **Optimized Storage:** Utilizes Write-Ahead Logging (WAL) and 32MB page caching for zero-latency database operations.\n• **Network Efficiency:** Smart GZip compression (>500 bytes) and parallel data loading for instantaneous page renders.",
+        "full_desc": "The Apartment Booking Platform is a sophisticated full-stack application designed to revolutionize the property rental experience. This enterprise-grade system combines a Flutter-based mobile application with a robust FastAPI backend, delivering a seamless booking experience for users while providing powerful management tools for administrators. The platform represents a complete solution for apartment discovery, booking, payment processing, and property management - all secured with military-grade encryption and enhanced by intelligent recommendation systems.\n\nCore Features:\n1. Intelligent Property Discovery: Smart search with advanced filtering and location-based suggestions.\n2. Comprehensive Booking System: Complete booking flow with date selection, guest management, and PDF invoice generation.\n3. High Security: AES-256-GCM field-level encryption and SQLCipher Transparent Data Encryption (TDE).\n4. Property Management: High-quality image galleries, 360° virtual tours, and Google Maps integration.\n5. Admin Dashboard: Complete operations control (CRUD), user management, and booking verification.\n6. Multilingual Support: Full Arabic and English localization with RTL support.\n\nTechnical Highlights:\n- FastAPI, SQLAlchemy, and SQLCipher for the backend.\n- Flutter, Provider, and Google Maps for the mobile client.\n- Multi-layered security architecture with PBKDF2HMAC key derivation.\n- Optimized database performance with WAL mode and memory-mapped I/O.",
+        "tech": "Flutter, Firebase, Google Maps"
+      },
+      "admin": {
+        "title": "Admin Dashboard App",
+        "summary": "A powerful dashboard for property oversight, user management, and financial transaction verification.",
+        "desc": "The central nerve center for the apartment ecosystem, providing administrators with surgical precision over platform operations and user safety.\n\n**🏢 Operational Mastery:**\n• **Fleet Management:** Complete CRUD interface for properties with automated verification and audit trails.\n• **User Sovereignty:** Real-time account management, role assignment (Admin/User), and activation controls.\n\n**💰 Financial Intelligence:**\n• **Booking Oversight:** Visual workflow for verifying receipts, approving bookings, and tracking automated PDF invoices.\n• **Security Canaries:** Integrated integrity tracking for encrypted fields and database health monitoring.\n\n**📊 System Transparency:**\n• **Live Monitoring:** Real-time dashboards displaying server status, LLM performance, and database latency.\n• **Activity Logging:** Comprehensive IP-aware logs documenting every critical system change for maximum accountability.",
+        "full_desc": "The Admin Dashboard is the nerve center of the apartment ecosystem, providing administrators with complete control over operations and ensuring system integrity. The dashboard focuses on operational efficiency, financial intelligence, and system transparency.\n\nCore Features:\n1. Asset Management: Comprehensive property management with detailed audit logs.\n2. User Management: Real-time control over accounts, roles, and activation.\n3. Financial Oversight: Receipt verification, booking approval, and PDF invoice tracking.\n4. Monitoring & Analytics: Live dashboards for server status, system performance, and activity logs.\n5. Security & Integrity: Continuous monitoring of encrypted data and database health.\n\nEngineering Strengths:\n- Enterprise-grade security architecture with field-level encryption.\n- Optimized database performance using SQLite and SQLCipher.\n- Parallel data loading strategy for fast response times.\n- Advanced UI/UX with smooth animations and transitions.",
+        "tech": "Flutter, Firebase, Charts"
+      },
+      "legal": {
+        "title": "Legal AI Chat",
+        "summary": "An AI-powered legal assistant providing expert advice across multiple domains with full privacy.",
+        "desc": "A pioneering legal platform facilitating access to information using the Gemma 4B language model, specifically fine-tuned for legal reasoning.\n\n**⚖️ Legal Coverage:**\n• **12+ Domains:** Specialized modules for Civil, Criminal, IP, Immigration, and Commercial law.\n• **Smart Threading:** Auto-organized chats with contextual title generation using deterministic AI models.\n\n**🧠 Neural Engineering:**\n• **Adaptive GPU Loading:** Intelligent system detecting VRAM to calculate optimal layer distribution for local acceleration.\n• **Logic Extraction:** Unique display of the 'Chain of Thought', parsing 'think' tags to show the AI's step-by-step reasoning.\n\n**🔒 Privacy Fortress:**\n• **Local Inference:** AI processing happens entirely on-device, ensuring sensitive consultations never touch the cloud.\n• **Fernet Encryption:** Symmetric encryption for message storage and logic logs, ensuring full user data sovereignty.",
+        "full_desc": "The Legal AI Consultation Platform is an advanced legal technology solution that combines cutting-edge AI with comprehensive legal knowledge to provide accessible guidance. This system features a Flutter-based mobile application connected to a FastAPI backend powered by the Gemma 4B language model.\n\nCore Features:\n1. Multi-Domain Legal Expertise: Covers 12 major legal categories including Civil, Criminal, and Commercial law.\n2. AI-Powered Conversational Interface: Context-aware responses with encrypted conversation history.\n3. Intelligent Management: Automatic title generation and user-specific conversation isolation.\n4. Advanced Security: End-to-end message encryption (Fernet) and local inference for total privacy.\n5. Chain-of-Thought Reasoning: Transparent AI decision-making by extracting logic from 'think' tags.\n6. Multilingual Support: Arabic and English support with RTL layout capabilities.\n\nTechnical Highlights:\n- Integration of Gemma 4B with an adaptive GPU offloading system.\n- FastAPI backend with async request handling and secure DB sessions.\n- RAG-style prompt engineering for high-quality legal information.\n- Local inference ensures that sensitive queries never leave the system.",
+        "tech": "Flutter, OpenAI API"
+      },
+      "website": {
+        "title": "LegalAI Website",
+        "summary": "Modern landing page for the Legal AI platform, showcasing features and pricing.",
+        "desc": "A modern landing page for the Legal AI platform showcasing features and pricing.\n\n**⚖️ Legal Coverage:**\n• **12+ Domains:** Specialized modules for Civil, Criminal, IP, Immigration, and Commercial law.\n• **Smart Threading:** Auto-organized chats with contextual title generation using deterministic AI models.\n\n**🧠 Neural Engineering:**\n• **Adaptive GPU Loading:** Intelligent system detecting VRAM to calculate optimal layer distribution for local acceleration.\n• **Logic Extraction:** Unique display of the 'Chain of Thought', parsing 'think' tags to show the AI's step-by-step reasoning.",
+        "tech": "Next.js, Tailwind CSS"
+      },
+      "cardio": {
+        "title": "Cardiomegaly Detection",
+        "summary": "Advanced web portal for AI-driven cardiomegaly detection and professional medical reporting.",
+        "desc": "A professional medical web ecosystem designed for scalable diagnostic workflows, providing a stunning bridge between AI models and clinical practitioners.\n\n**🏥 Specialized Portals:**\n• **Doctor Portal:** High-impact interface for report creation, priority categorization (Urgent/Warning/Normal), and patient analytics.\n• **User Environment:** Streamlined multi-file upload gateway with real-time UI status and result history tracking.\n• **Engineering Dashboard:** Comprehensive system monitoring including resource usage, AI model latency, and database health.\n\n**🎨 Aesthetic Engineering:**\n• **Glassmorphism UI:** Modern, immersive design utilizing Tailwind CSS, hardware-accelerated animations, and backdrop filters.\n• **Multilingual RTL:** Expertly crafted Arabic/English support with Cairo typography and culturally adapted responsive layouts.\n\n**🔬 Diagnostic Pipeline:**\n• **Live Counters:** Animated statistics processing hundreds of images with real-time confidence interval visualization.\n• **Export Intelligence:** Automated medical report generation with data-driven recommendations and printable history logs.",
+        "full_desc": "The Cardio AI Web Platform is a comprehensive, modern web application providing a stunning, responsive interface for AI-powered medical image analysis. It features multiple role-based dashboards (User, Doctor, Engineer), real-time analytics, and an AI chatbot.\n\nCore Features:\n1. Multi-Role Authentication: Portals for Patients, Doctors, and Engineers with role-specific features.\n2. Professional Dashboards: Medical report management, data analytics, and full system monitoring.\n3. AI Image Analysis: Upload interface for medical images with confidence-coded results.\n4. AI Chatbot: Virtual assistant providing information about cardiomegaly and health guidance.\n5. Modern Design: Glassmorphism-based UI, smooth animations, and full dark/light mode support.\n6. Bilingual Support: Full Arabic (RTL) and English support with culturally adapted content.\n\nTechnical Highlights:\n- Tailwind CSS for advanced visual effects and responsive design.\n- Real-time API integration for image processing and live statistics.\n- Comprehensive monitoring system for resource usage, model status, and DB health.",
+        "tech": "Python, Deep Learning, EfficientNetB7"
+      },
+      "cardio_app": {
+        "title": "Cardio Mobile App",
+        "summary": "Mobile AI solution for rapid chest X-ray analysis and localized healthcare guidance.",
+        "desc": "Mobile medical AI at the edge, providing rapid cardiomegaly detection and health guidance through a sophisticated local intelligence pipeline.\n\n**🩺 Diagnostic Power:**\n• **Dual-Path Analysis:** Seamlessly switches between local TFLite offline inference and high-performance Cloud API modes.\n• **AI Chat Integration:** A context-aware health assistant providing guidance on diagnostic results and medical terminology.\n\n**🖼️ Medical Engineering:**\n• **Deep Learning Engine:** Utilizes DenseNet-121 with specialized preprocessing (channel normalization & 224x224 resizing).\n• **Offline-First Storage:** Local SQLite database with version migration support and indexing for instantaneous history retrieval.\n\n**🏥 Clinical Features:**\n• **Priority Dashboard:** Visual categorization of results based on diagnostic confidence and urgency levels.\n• **Notification System:** Background monitoring for report availability and automated health alerts.",
+        "full_desc": "Cardio AI Mobile is a sophisticated healthcare application built with Flutter that leverages deep learning models to detect cardiomegaly from X-ray images. It combines cutting-edge AI with an intuitive mobile interface for rapid, accurate diagnostic support.\n\nCore Features:\n1. Dual-Mode Analysis: Supports local on-device inference (TFLite) and high-performance cloud API analysis.\n2. Intelligent Image Processing: Sophisticated preprocessing pipeline for optimal model input.\n3. AI Chat Assistant: Context-aware medical guidance in both Arabic and English.\n4. Comprehensive Medical Reports: Priority-based system with doctor recommendations and history tracking.\n5. Local Database (SQLite): Offline storage, analysis tracking, and data synchronization.\n6. Full Localization: Arabic and English support with RTL layout and dynamic switching.\n\nTechnical Highlights:\n- GetX state management for a reactive and efficient user interface.\n- TensorFlow Lite integration for offline on-device deep learning.\n- Comprehensive API architecture with robust error handling and JWT authentication.\n- Performance optimizations for image processing and database queries.",
+        "tech": "Flutter, AI Integration"
+      },
+      "hayat": {
+        "title": "Hayat App",
+        "summary": "Coming Soon...",
+        "desc": "This application is currently under development and will be available soon.",
+        "full_desc": "",
+        "tech": "Flutter, FastAPI"
+      },
+      "portfolio": {
+        "title": "Portfolio Website",
+        "summary": "Modern developer portfolio showcasing projects and research with bilingual support.",
+        "desc": "Personal developer portfolio built with Next.js, featuring internationalization (EN/AR), dark mode, and smooth animations.",
+        "tech": "Next.js, Tailwind CSS, Framer Motion"
+      }
+    }
+  },
+  "Contact": {
+    "title": "Get In Touch",
+    "name": "Name",
+    "email": "Email",
+    "message": "Message",
+    "send": "Send Message",
+    "build_together": "Let's build something together",
+    "touch_title": "Get in touch",
+    "touch_desc": "I'm always open to discussing new projects, creative ideas, or opportunities. Feel free to reach out!",
+    "find_me": "Find me on",
+    "location": "Muscat, Oman"
+  }
+}

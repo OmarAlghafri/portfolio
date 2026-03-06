@@ -1,0 +1,1318 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medical Image Analysis Platform - Cardio AI Analysis</title>
+
+    <!-- CSS Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#5D5CDE',
+                        secondary: '#0463FA',
+                        dark: '#1B2C51',
+                        light: '#EFF5FF',
+                        accent: '#FF6B6B',
+                        success: '#4ECDC4'
+                    },
+                    fontFamily: {
+                        'english': ['Inter', 'system-ui', 'sans-serif']
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'slideInLeft': 'slideInLeft 1s ease-out',
+                        'slideInRight': 'slideInRight 1s ease-out',
+                        'fadeInUp': 'fadeInUp 1s ease-out',
+                        'pulse-slow': 'pulse 3s infinite',
+                        'bounce-slow': 'bounce 2s infinite'
+                    }
+                }
+            },
+            darkMode: 'class'
+        }
+
+        // Dark mode detection
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('dark');
+        }
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+            if (event.matches) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        });
+    </script>
+
+    <style>
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+
+        @keyframes slideInLeft {
+            from {
+                transform: translateX(-100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .gradient-bg {
+            background: linear-gradient(135deg, #5D5CDE 0%, #0463FA 50%, #4ECDC4 100%);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #5D5CDE, #0463FA);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .dark .glass-effect {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+
+        .card-hover:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(93, 92, 222, 0.2);
+        }
+
+        .floating-animation {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .pulse-ring {
+            animation: pulse-ring 2s infinite;
+        }
+
+        @keyframes pulse-ring {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(2);
+                opacity: 0;
+            }
+        }
+
+        .hero-pattern {
+            background-image:
+                radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.1) 1px, transparent 0);
+            background-size: 50px 50px;
+        }
+
+        .service-icon {
+            background: linear-gradient(135deg, #5D5CDE, #0463FA);
+            transition: all 0.3s ease;
+        }
+
+        .service-icon:hover {
+            background: linear-gradient(135deg, #0463FA, #4ECDC4);
+            transform: rotate(10deg) scale(1.1);
+        }
+
+        .stats-number {
+            background: linear-gradient(135deg, #FF6B6B, #4ECDC4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .navbar-blur {
+            backdrop-filter: blur(10px);
+            background-color: rgba(255, 255, 255, 0.9);
+        }
+
+        .dark .navbar-blur {
+            background-color: rgba(0, 0, 0, 0.9);
+        }
+
+        .modal-backdrop-blur {
+            backdrop-filter: blur(5px);
+        }
+
+        .btn-shine {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-shine::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.6s;
+        }
+
+        .btn-shine:hover::before {
+            left: 100%;
+        }
+
+        /* Ensure scrolling works correctly when embedded */
+        html,
+        body {
+            overflow: auto !important;
+            height: auto !important;
+            min-height: 100%;
+        }
+
+        #loadingSpinner[style*="opacity: 0"] {
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 dark:bg-gray-900 font-english">
+    <!-- Loading Spinner -->
+    <div id="loadingSpinner"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-white dark:bg-gray-900 transition-opacity duration-500">
+        <div class="relative">
+            <div class="w-20 h-20 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+            <div
+                class="absolute inset-0 w-20 h-20 border-4 border-secondary border-b-transparent rounded-full animate-spin animate-reverse">
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-40 navbar-blur transition-all duration-300" id="navbar">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between h-20">
+                <!-- Logo -->
+                <div class="flex items-center space-x-4">
+                    <div class="w-12 h-12 gradient-bg rounded-full flex items-center justify-center">
+                        <i class="fas fa-heartbeat text-white text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold gradient-text">Image Analysis Platform</h1>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Cardio AI Analysis</p>
+                    </div>
+                </div>
+
+                <!-- Navigation Links -->
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#home"
+                        class="text-gray-700 dark:text-gray-300 hover:text-primary transition-colors">Home</a>
+                    <a href="#about"
+                        class="text-gray-700 dark:text-gray-300 hover:text-primary transition-colors">About</a>
+                    <a href="#services"
+                        class="text-gray-700 dark:text-gray-300 hover:text-primary transition-colors">Services</a>
+                    <a href="#stats"
+                        class="text-gray-700 dark:text-gray-300 hover:text-primary transition-colors">Statistics</a>
+                    <a href="#contact"
+                        class="text-gray-700 dark:text-gray-300 hover:text-primary transition-colors">Contact</a>
+                    <a href="login.html"
+                        class="text-gray-700 dark:text-gray-300 hover:text-primary transition-colors flex items-center">
+                        <i class="fas fa-globe ml-2"></i> عربي
+                    </a>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex items-center space-x-4">
+                    <div
+                        class="hidden md:flex items-center bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full px-1 py-1 shadow-sm">
+                        <a href="Doctor_login_en.html"
+                            class="px-3 py-1 text-sm rounded-full text-gray-700 dark:text-gray-200 hover:bg-light dark:hover:bg-gray-700 transition">I'm
+                            a Doctor</a>
+                        <a href="admin_login_en.html"
+                            class="px-3 py-1 text-sm rounded-full text-gray-700 dark:text-gray-200 hover:bg-light dark:hover:bg-gray-700 transition">I'm
+                            an Engineer</a>
+                        <a href="login_en.html"
+                            class="px-3 py-1 text-sm rounded-full text-white bg-primary hover:bg-purple-600 transition">I'm
+                            a User</a>
+                    </div>
+                    <div id="userActions" class="hidden md:flex items-center space-x-4">
+                        <span class="text-sm text-gray-600 dark:text-gray-300" id="welcomeUser">Welcome</span>
+                        <button id="logoutBtn"
+                            class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl font-semibold transition-all duration-300 btn-shine">
+                            <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                        </button>
+                    </div>
+                    <button id="loginBtn"
+                        class="bg-primary hover:bg-purple-600 text-white px-6 py-2 rounded-xl font-semibold transition-all duration-300 btn-shine">
+                        Login
+                    </button>
+                    <button id="mobileMenuBtn" class="md:hidden text-gray-700 dark:text-gray-300">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Role Selection Slider -->
+    <section id="roleSlider" class="hidden mt-20 relative overflow-hidden">
+        <div class="container mx-auto px-4">
+            <div class="relative bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 md:p-10 glass-effect">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white">
+                        Select Your Role to Continue
+                    </h3>
+                    <div class="flex items-center gap-2" id="roleDots">
+                        <button class="w-2.5 h-2.5 rounded-full bg-gray-300 dark:bg-gray-600"
+                            data-role-dot="0"></button>
+                        <button class="w-2.5 h-2.5 rounded-full bg-gray-300 dark:bg-gray-600"
+                            data-role-dot="1"></button>
+                    </div>
+                </div>
+
+                <div class="relative">
+                    <button id="rolePrev"
+                        class="hidden sm:flex absolute -left-3 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-primary text-white items-center justify-center shadow-md hover:bg-purple-600 transition">
+                        <i class="fas fa-angle-left"></i>
+                    </button>
+                    <button id="roleNext"
+                        class="hidden sm:flex absolute -right-3 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-primary text-white items-center justify-center shadow-md hover:bg-purple-600 transition">
+                        <i class="fas fa-angle-right"></i>
+                    </button>
+
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <!-- Doctor Slide -->
+                        <div data-role-slide class="transition-opacity duration-500">
+                            <div class="rounded-2xl p-6 md:p-8 bg-gradient-to-br from-secondary to-primary text-white">
+                                <div class="flex items-start gap-4">
+                                    <div
+                                        class="w-14 h-14 rounded-xl bg-white bg-opacity-20 flex items-center justify-center">
+                                        <i class="fas fa-user-md text-2xl"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <h4 class="text-xl md:text-2xl font-bold mb-2">I'm a Doctor</h4>
+                                        <p class="opacity-90 mb-4">Manage patient reports and review analysis results
+                                        </p>
+                                        <button data-target="Doctor_login.html"
+                                            class="bg-white text-secondary font-semibold px-6 py-3 rounded-xl hover:bg-gray-100 transition btn-shine">
+                                            Access Doctor Dashboard
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Engineer Slide -->
+                        <div data-role-slide class="transition-opacity duration-500 hidden opacity-0">
+                            <div class="rounded-2xl p-6 md:p-8 bg-gradient-to-br from-primary to-success text-white">
+                                <div class="flex items-start gap-4">
+                                    <div
+                                        class="w-14 h-14 rounded-xl bg-white bg-opacity-20 flex items-center justify-center">
+                                        <i class="fas fa-user-gear text-2xl"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <h4 class="text-xl md:text-2xl font-bold mb-2">I'm an Engineer</h4>
+                                        <p class="opacity-90 mb-4">Manage system, users, and platform settings</p>
+                                        <button data-target="admin_login.html"
+                                            class="bg-white text-primary font-semibold px-6 py-3 rounded-xl hover:bg-gray-100 transition btn-shine">
+                                            Access Engineer Dashboard
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Hero Section -->
+    <section id="home" class="pt-20 pb-16 gradient-bg hero-pattern overflow-hidden">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col lg:flex-row items-center gap-12">
+                <!-- Hero Content -->
+                <div class="lg:w-1/2 text-white">
+                    <div class="animate-slideInLeft">
+                        <h1 class="text-5xl lg:text-7xl font-bold mb-6 leading-tight">
+                            Let <span class="text-yellow-300">AI</span>
+                            <br>Analyze Your Medical Images
+                        </h1>
+                        <p class="text-xl lg:text-2xl mb-8 opacity-90 leading-relaxed">
+                            Detect heart muscle hypertrophy using the latest AI technologies
+                            <br>High accuracy, fast results, and diagnostic confidence
+                        </p>
+
+                        <!-- Action Buttons -->
+                        <div class="flex flex-col sm:flex-row gap-4">
+                            <button id="startAnalysisBtn"
+                                class="bg-white text-primary px-8 py-4 rounded-xl font-bold text-lg hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 btn-shine">
+                                <i class="fas fa-upload mr-2"></i>
+                                Start Analysis Now
+                            </button>
+                            <button onclick="window.location.href='ChatBot_en.html'"
+                                class="glass-effect text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-white hover:bg-opacity-20 transition-all duration-300">
+                                <i class="fas fa-play mr-2"></i>
+                                Start Smart Assistant
+                            </button>
+                        </div>
+
+                        <!-- Stats Row -->
+                        <div class="grid grid-cols-3 gap-6 mt-12">
+                            <div class="text-center">
+                                <div id="stats-images" class="stats-number text-3xl font-bold">...</div>
+                                <div class="text-sm opacity-80">Image analyzed</div>
+                            </div>
+                            <div class="text-center">
+                                <div id="stats-models" class="stats-number text-3xl font-bold">...</div>
+                                <div class="text-sm opacity-80">Smart Models</div>
+                            </div>
+                            <div class="text-center">
+                                <div id="stats-accuracy" class="stats-number text-3xl font-bold">...%</div>
+                                <div class="text-sm opacity-80">Diagnostic Accuracy</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hero Image -->
+                <div class="lg:w-1/2 relative">
+                    <div class="animate-slideInRight">
+                        <div class="relative">
+                            <!-- Main floating card -->
+                            <div
+                                class="floating-animation bg-white dark:bg-gray-800 rounded-3xl p-8 shadow-2xl max-w-md mx-auto">
+                                <div class="text-center">
+                                    <div
+                                        class="w-24 h-24 gradient-bg rounded-full flex items-center justify-center mx-auto mb-6">
+                                        <i class="fas fa-heart text-white text-3xl"></i>
+                                    </div>
+                                    <h3 class="text-2xl font-bold text-gray-800 dark:text-white mb-4">Instant Image
+                                        Analysis</h3>
+                                    <p class="text-gray-600 dark:text-gray-300 mb-6">Upload your image and get results
+                                        in seconds</p>
+
+                                    <!-- Progress bar animation -->
+                                    <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 mb-4">
+                                        <div class="bg-gradient-to-r from-primary to-secondary h-3 rounded-full animate-pulse"
+                                            style="width: 85%"></div>
+                                    </div>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400"></p>
+                                </div>
+                            </div>
+
+                            <!-- Floating elements -->
+                            <div
+                                class="absolute -top-4 -left-4 w-16 h-16 bg-yellow-300 rounded-full flex items-center justify-center shadow-lg animate-bounce-slow">
+                                <i class="fas fa-check text-white text-xl"></i>
+                            </div>
+
+                            <div class="absolute -bottom-4 -right-4 w-20 h-20 bg-green-400 rounded-full flex items-center justify-center shadow-lg floating-animation"
+                                style="animation-delay: 2s;">
+                                <i class="fas fa-brain text-white text-2xl"></i>
+                            </div>
+
+                            <div
+                                class="absolute top-1/2 -left-8 w-12 h-12 bg-pink-400 rounded-full flex items-center justify-center shadow-lg pulse-ring">
+                                <i class="fas fa-bolt text-white"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="py-20 bg-white dark:bg-gray-800">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col lg:flex-row items-center gap-16">
+                <!-- About Image -->
+                <div class="lg:w-1/2">
+                    <div class="relative">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="space-y-4">
+                                <div class="bg-gradient-to-br from-primary to-secondary rounded-2xl p-8 text-white">
+                                    <i class="fas fa-microscope text-4xl mb-4"></i>
+                                    <h4 class="text-xl font-bold">Precise Analysis</h4>
+                                </div>
+                                <div class="bg-gradient-to-br from-success to-accent rounded-2xl p-6 text-white">
+                                    <i class="fas fa-clock text-3xl mb-3"></i>
+                                    <h4 class="text-lg font-bold">Fast Results</h4>
+                                </div>
+                            </div>
+                            <div class="space-y-4 mt-8">
+                                <div class="bg-gradient-to-br from-accent to-primary rounded-2xl p-6 text-white">
+                                    <i class="fas fa-shield-alt text-3xl mb-3"></i>
+                                    <h4 class="text-lg font-bold">Security & Privacy</h4>
+                                </div>
+                                <div class="bg-gradient-to-br from-secondary to-success rounded-2xl p-8 text-white">
+                                    <i class="fas fa-chart-line text-4xl mb-4"></i>
+                                    <h4 class="text-xl font-bold">High Accuracy</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- About Content -->
+                <div class="lg:w-1/2">
+                    <div class="animate-fadeInUp">
+                        <span
+                            class="inline-block bg-primary bg-opacity-10 text-primary px-4 py-2 rounded-full text-sm font-semibold mb-4">
+                            About the Platform
+                        </span>
+                        <h2 class="text-4xl font-bold text-gray-800 dark:text-white mb-6">
+                            Why Trust Us? Learn About Our Platform!
+                        </h2>
+                        <p class="text-lg text-gray-600 dark:text-gray-300 mb-8 leading-relaxed">
+                            We are a specialized team in applying advanced deep learning and artificial intelligence
+                            technologies
+                            for medical image analysis. Our expertise includes the latest neural networks such as
+                            EfficientNet, ResNet, DenseNet-169, and Inception v3,
+                            optimized for high-accuracy detection of medical conditions like heart muscle hypertrophy
+                            from X-ray images.
+                        </p>
+
+                        <!-- Features List -->
+                        <div class="space-y-4 mb-8">
+                            <div class="flex items-center gap-4">
+                                <div
+                                    class="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-check text-green-600 dark:text-green-400"></i>
+                                </div>
+                                <span class="text-gray-700 dark:text-gray-300">Diagnostic accuracy up </span>
+                            </div>
+                            <div class="flex items-center gap-4">
+                                <div
+                                    class="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-check text-green-600 dark:text-green-400"></i>
+                                </div>
+                                <span class="text-gray-700 dark:text-gray-300">Instant image processing</span>
+                            </div>
+                            <div class="flex items-center gap-4">
+                                <div
+                                    class="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-check text-green-600 dark:text-green-400"></i>
+                                </div>
+                                <span class="text-gray-700 dark:text-gray-300">Secure storage of results and
+                                    images</span>
+                            </div>
+                        </div>
+
+                        <button onclick="window.location.href='user_info_en.html'"
+                            class="bg-primary hover:bg-purple-600 text-white px-8 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 btn-shine">
+                            Read More
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section id="services" class="py-20 bg-gray-50 dark:bg-gray-900">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <span
+                    class="inline-block bg-primary bg-opacity-10 text-primary px-4 py-2 rounded-full text-sm font-semibold mb-4">
+                    Our Services
+                </span>
+                <h2 class="text-4xl font-bold text-gray-800 dark:text-white mb-6">Try the Model</h2>
+                <p class="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+                    Discover the power of AI in medical diagnosis through our advanced models
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- CNN Model Service -->
+                <div class="card-hover bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-xl">
+                    <div class="service-icon w-16 h-16 rounded-2xl flex items-center justify-center mb-6 mx-auto">
+                        <i class="fas fa-heartbeat text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800 dark:text-white mb-4 text-center">CNN Model</h3>
+                    <p class="text-gray-600 dark:text-gray-300 mb-6 text-center leading-relaxed">
+                        A deep neural network specialized in image and video processing, relying on convolutional layers
+                        for feature extraction.
+                        Applied in classification, object recognition, and medical imaging, excelling in visual data
+                        analysis.
+                    </p>
+                    <div class="text-center">
+                        <button id="tryModelBtn"
+                            class="bg-primary hover:bg-purple-600 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 btn-shine">
+                            <i class="fas fa-play mr-2"></i>
+                            Try This Model
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Additional Service Cards -->
+                <div class="card-hover bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-xl">
+                    <div class="service-icon w-16 h-16 rounded-2xl flex items-center justify-center mb-6 mx-auto">
+                        <i class="fas fa-brain text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800 dark:text-white mb-4 text-center">Advanced Analysis</h3>
+                    <p class="text-gray-600 dark:text-gray-300 mb-6 text-center leading-relaxed">
+                        Advanced intelligent algorithms that analyze medical images with high accuracy and provide
+                        comprehensive patient reports.
+                    </p>
+                    <div class="text-center">
+                        <button onclick="window.location.href='info_en.html'"
+                            class="bg-secondary hover:bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 btn-shine">
+                            <i class="fas fa-search mr-2"></i>
+                            Discover More
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card-hover bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-xl">
+                    <div class="service-icon w-16 h-16 rounded-2xl flex items-center justify-center mb-6 mx-auto">
+                        <i class="fas fa-chart-bar text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800 dark:text-white mb-4 text-center">Detailed Reports</h3>
+                    <p class="text-gray-600 dark:text-gray-300 mb-6 text-center leading-relaxed">
+                        Get detailed medical reports and accurate statistics about analysis results with personalized
+                        medical recommendations.
+                    </p>
+                    <div class="text-center">
+                        <button id="viewReportsBtn"
+                            class="bg-success hover:bg-teal-600 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 btn-shine">
+                            <i class="fas fa-file-medical mr-2"></i>
+                            View Reports
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-20 bg-white dark:bg-gray-800">
+        <div class="container mx-auto px-4">
+            <div class="max-w-4xl mx-auto">
+                <div class="text-center mb-16">
+                    <span
+                        class="inline-block bg-primary bg-opacity-10 text-primary px-4 py-2 rounded-full text-sm font-semibold mb-4">
+                        Contact Us
+                    </span>
+                    <h2 class="text-4xl font-bold text-gray-800 dark:text-white mb-6">Get in Touch</h2>
+                    <p class="text-xl text-gray-600 dark:text-gray-300">
+                        We're here to help you on your journey to better medical diagnosis
+                    </p>
+                </div>
+
+                <div class="grid lg:grid-cols-3 gap-8">
+                    <!-- Contact Info -->
+                    <div class="lg:col-span-1 space-y-6">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-primary bg-opacity-10 rounded-xl flex items-center justify-center">
+                                <i class="fas fa-map-marker-alt text-primary"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-800 dark:text-white">Address</h4>
+                                <p class="text-gray-600 dark:text-gray-300">Al Seeb - Muscat</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-primary bg-opacity-10 rounded-xl flex items-center justify-center">
+                                <i class="fas fa-phone text-primary"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-800 dark:text-white">Phone</h4>
+                                <p class="text-gray-600 dark:text-gray-300">+968 91280628</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-primary bg-opacity-10 rounded-xl flex items-center justify-center">
+                                <i class="fas fa-envelope text-primary"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-800 dark:text-white">Email</h4>
+                                <p class="text-gray-600 dark:text-gray-300">210290om@aou.edu.om</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contact Form -->
+                    <div class="lg:col-span-2">
+                        <form id="contactForm" class="space-y-6">
+                            <div class="grid sm:grid-cols-2 gap-6">
+                                <input type="text" id="contactName" placeholder="Full Name" required
+                                    class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-800 dark:text-white text-base">
+                                <input type="email" id="contactEmail" placeholder="Email Address" required
+                                    class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-800 dark:text-white text-base">
+                            </div>
+                            <input type="text" id="contactSubject" placeholder="Subject" required
+                                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-800 dark:text-white text-base">
+                            <textarea rows="5" id="contactMessage" placeholder="Your Message" required
+                                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-800 dark:text-white text-base resize-none"></textarea>
+                            <button type="submit"
+                                class="w-full bg-primary hover:bg-purple-600 text-white py-3 rounded-xl font-semibold transition-all duration-300 btn-shine">
+                                Send Message
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-16">
+        <div class="container mx-auto px-4">
+            <div class="grid lg:grid-cols-4 gap-8">
+                <!-- Brand -->
+                <div class="lg:col-span-1">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-12 h-12 gradient-bg rounded-xl flex items-center justify-center">
+                            <i class="fas fa-heartbeat text-white text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold">Image Analysis Platform</h3>
+                            <p class="text-sm opacity-75">Cardio AI Analysis</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-300 mb-6">
+                        Advanced platform for medical image analysis using artificial intelligence
+                    </p>
+                    <div class="flex gap-3">
+                        <a href="#"
+                            class="w-10 h-10 bg-white bg-opacity-10 rounded-lg flex items-center justify-center hover:bg-primary transition-colors">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#"
+                            class="w-10 h-10 bg-white bg-opacity-10 rounded-lg flex items-center justify-center hover:bg-primary transition-colors">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#"
+                            class="w-10 h-10 bg-white bg-opacity-10 rounded-lg flex items-center justify-center hover:bg-primary transition-colors">
+                            <i class="fab fa-linkedin-in"></i>
+                        </a>
+                        <a href="#"
+                            class="w-10 h-10 bg-white bg-opacity-10 rounded-lg flex items-center justify-center hover:bg-primary transition-colors">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Quick Links -->
+                <div>
+                    <h4 class="text-lg font-semibold mb-6">Quick Links</h4>
+                    <ul class="space-y-3">
+                        <li><a href="#about" class="text-gray-300 hover:text-white transition-colors">About Us</a></li>
+                        <li><a href="#contact" class="text-gray-300 hover:text-white transition-colors">Contact Us</a>
+                        </li>
+                        <li><a href="#services" class="text-gray-300 hover:text-white transition-colors">Our
+                                Services</a></li>
+                    </ul>
+                </div>
+
+                <!-- Services -->
+                <div>
+                    <h4 class="text-lg font-semibold mb-6">Our Services</h4>
+                    <ul class="space-y-3">
+                        <li><a href="#services" class="text-gray-300 hover:text-white transition-colors">AI Analysis</a>
+                        </li>
+                        <li><a href="#services" class="text-gray-300 hover:text-white transition-colors">Medical
+                                Reports</a></li>
+                        <li><a href="#services"
+                                class="text-gray-300 hover:text-white transition-colors">Consultation</a></li>
+                    </ul>
+                </div>
+
+                <!-- Newsletter -->
+                <div>
+                    <h4 class="text-lg font-semibold mb-6">Newsletter</h4>
+                    <p class="text-gray-300 mb-4">Subscribe to our newsletter for the latest updates</p>
+                    <form class="flex gap-2">
+                        <input type="email" placeholder="Your Email"
+                            class="flex-1 px-4 py-2 bg-white bg-opacity-10 rounded-lg border border-white border-opacity-20 text-white placeholder-gray-400">
+                        <button type="submit"
+                            class="px-4 py-2 bg-primary hover:bg-purple-600 rounded-lg transition-colors">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <hr class="border-white border-opacity-20 my-8">
+
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <p class="text-gray-300 text-center md:text-left mb-4 md:mb-0">
+                    &copy; 2024 Medical Image Analysis Platform. All rights reserved.
+                </p>
+                <p class="text-gray-300 text-center md:text-left">
+                    Developed by <span class="text-primary font-semibold">Omar Alghfri</span>
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Login/Register Modal -->
+    <div id="authModal" class="fixed inset-0 z-50 hidden">
+        <div class="modal-backdrop-blur absolute inset-0 bg-black bg-opacity-50" id="modalBackdrop"></div>
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md transform transition-all duration-300 scale-95"
+                id="modalContent">
+                <div class="p-6">
+                    <!-- Modal Header -->
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="flex gap-4">
+                            <button id="loginTab"
+                                class="px-4 py-2 text-primary border-b-2 border-primary font-semibold">Login</button>
+                            <button id="registerTab"
+                                class="px-4 py-2 text-gray-500 hover:text-primary transition-colors">Register</button>
+                        </div>
+                        <button id="closeModal" class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+
+                    <!-- Login Form -->
+                    <form id="loginForm" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Email
+                                Address</label>
+                            <input type="email" id="loginEmail" required
+                                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-800 dark:text-white text-base">
+                        </div>
+                        <div>
+                            <label
+                                class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Password</label>
+                            <input type="password" id="loginPassword" required
+                                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-800 dark:text-white text-base">
+                        </div>
+                        <button type="submit"
+                            class="w-full bg-primary hover:bg-purple-600 text-white py-3 rounded-xl font-semibold transition-all duration-300 btn-shine">
+                            Login
+                        </button>
+                    </form>
+
+                    <!-- Register Form -->
+                    <form id="registerForm" class="space-y-4 hidden">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Full
+                                Name</label>
+                            <input type="text" id="registerName" required
+                                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-800 dark:text-white text-base">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Email
+                                Address</label>
+                            <input type="email" id="registerEmail" required
+                                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-800 dark:text-white text-base">
+                        </div>
+                        <div>
+                            <label
+                                class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Password</label>
+                            <input type="password" id="registerPassword" required
+                                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-800 dark:text-white text-base">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Confirm
+                                Password</label>
+                            <input type="password" id="confirmPassword" required
+                                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-800 dark:text-white text-base">
+                        </div>
+                        <button type="submit"
+                            class="w-full bg-primary hover:bg-purple-600 text-white py-3 rounded-xl font-semibold transition-all duration-300 btn-shine">
+                            Create Account
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        class MedicalAIApp {
+            constructor() {
+                this.API_BASE = 'http://localhost:8000';
+                this.init();
+            }
+
+            init() {
+                this.hideLoadingSpinner();
+                this.setupEventListeners();
+                this.setupScrollAnimations();
+                this.animateCounters();
+                this.setupContactForm();
+                this.checkAuthStatus();
+                this.updateSystemStats();
+            }
+
+            async updateSystemStats() {
+                try {
+                    const response = await fetch(`${this.API_BASE}/api/admin/system-overview/`);
+                    const data = await response.json();
+
+                    if (data.success) {
+                        const overview = data.system_overview;
+
+                        const imagesStat = document.getElementById('stats-images');
+                        if (imagesStat) imagesStat.textContent = overview.total_images.toLocaleString();
+
+                        const modelsStat = document.getElementById('stats-models');
+                        if (modelsStat && overview.model_count) {
+                            modelsStat.textContent = overview.model_count;
+                        } else if (modelsStat) {
+                            modelsStat.textContent = 'N/A';
+                        }
+
+                        const accuracyStat = document.getElementById('stats-accuracy');
+                        if (accuracyStat && overview.admin_accuracy) {
+                            accuracyStat.textContent = `${overview.admin_accuracy}%`;
+                        } else if (accuracyStat) {
+                            accuracyStat.textContent = 'N/A';
+                        }
+
+                    }
+                } catch (error) {
+                    console.error('Error fetching system overview:', error);
+                    // Keep static data as fallback
+                }
+            }
+
+            hideLoadingSpinner() {
+                setTimeout(() => {
+                    document.getElementById('loadingSpinner').style.opacity = '0';
+                    setTimeout(() => {
+                        document.getElementById('loadingSpinner').style.display = 'none';
+                    }, 500);
+                }, 1000);
+            }
+
+            setupEventListeners() {
+                // Modal controls
+                document.getElementById('loginBtn').addEventListener('click', () => this.showAuthModal());
+                const logoutBtn = document.getElementById('logoutBtn');
+                if (logoutBtn) { logoutBtn.addEventListener('click', () => this.logout()); }
+                document.getElementById('startAnalysisBtn').addEventListener('click', () => this.checkAndRedirect());
+                document.getElementById('tryModelBtn').addEventListener('click', () => this.checkAndRedirect());
+                document.getElementById('viewReportsBtn').addEventListener('click', () => this.checkAndRedirectToReports());
+                document.getElementById('closeModal').addEventListener('click', () => this.hideAuthModal());
+                document.getElementById('modalBackdrop').addEventListener('click', () => this.hideAuthModal());
+
+                // Tab switching
+                document.getElementById('loginTab').addEventListener('click', () => this.switchToLogin());
+                document.getElementById('registerTab').addEventListener('click', () => this.switchToRegister());
+
+                // Form submissions
+                document.getElementById('loginForm').addEventListener('submit', (e) => this.handleLogin(e));
+                document.getElementById('registerForm').addEventListener('submit', (e) => this.handleRegister(e));
+
+                // Smooth scrolling
+                document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                    anchor.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        const target = document.querySelector(this.getAttribute('href'));
+                        if (target) {
+                            target.scrollIntoView({ behavior: 'smooth' });
+                        }
+                    });
+                });
+
+                // Navbar scroll effect
+                window.addEventListener('scroll', this.handleNavbarScroll);
+            }
+
+            checkAuthStatus() {
+                const token = localStorage.getItem('token');
+                if (token) {
+                    document.getElementById('loginBtn').innerHTML = '<i class="fas fa-user mr-2"></i>Dashboard';
+                    document.getElementById('loginBtn').onclick = () => this.redirectToprofile();
+                    document.getElementById('userActions').style.display = 'flex';
+                    const userData = JSON.parse(localStorage.getItem('userData'));
+                    document.getElementById('welcomeUser').textContent = `Welcome, ${userData.name || userData.username}`;
+                } else {
+                    document.getElementById('userActions').style.display = 'none';
+                }
+            }
+
+            checkAndRedirect() {
+                const token = localStorage.getItem('token');
+                if (token) {
+                    this.redirectToAnalysis();
+                } else {
+                    sessionStorage.setItem('redirectAfterLogin', 'analysis_en.html');
+                    this.showAuthModal();
+                }
+            }
+
+            checkAndRedirectToReports() {
+                const token = localStorage.getItem('token');
+                if (token) {
+                    window.location.href = 'reports_en.html';
+                } else {
+                    sessionStorage.setItem('redirectAfterLogin', 'reports_en.html');
+                    this.showAuthModal();
+                }
+            }
+
+            logout() {
+                localStorage.removeItem('token');
+                localStorage.removeItem('userData');
+                localStorage.removeItem('userRole');
+                this.showSuccess('Logged out successfully');
+                const loginBtn = document.getElementById('loginBtn');
+                const userActions = document.getElementById('userActions');
+                if (loginBtn) {
+                    loginBtn.innerHTML = 'Login';
+                    loginBtn.onclick = () => this.showAuthModal();
+                    loginBtn.style.display = 'block';
+                }
+                if (userActions) userActions.style.display = 'none';
+                setTimeout(() => { window.location.reload(); }, 800);
+            }
+
+            redirectToAnalysis() {
+                window.location.href = 'analysis_en.html'; // The image analysis page we designed
+            }
+            redirectToprofile() {
+                window.location.href = 'profile.html'; // The profile page we designed
+            }
+
+            showAuthModal() {
+                document.getElementById('authModal').classList.remove('hidden');
+                setTimeout(() => {
+                    document.getElementById('modalContent').classList.remove('scale-95');
+                    document.getElementById('modalContent').classList.add('scale-100');
+                }, 10);
+            }
+
+            hideAuthModal() {
+                document.getElementById('modalContent').classList.add('scale-95');
+                document.getElementById('modalContent').classList.remove('scale-100');
+                setTimeout(() => {
+                    document.getElementById('authModal').classList.add('hidden');
+                }, 300);
+            }
+
+            switchToLogin() {
+                document.getElementById('loginTab').className = 'px-4 py-2 text-primary border-b-2 border-primary font-semibold';
+                document.getElementById('registerTab').className = 'px-4 py-2 text-gray-500 hover:text-primary transition-colors';
+                document.getElementById('loginForm').classList.remove('hidden');
+                document.getElementById('registerForm').classList.add('hidden');
+            }
+
+            switchToRegister() {
+                document.getElementById('registerTab').className = 'px-4 py-2 text-primary border-b-2 border-primary font-semibold';
+                document.getElementById('loginTab').className = 'px-4 py-2 text-gray-500 hover:text-primary transition-colors';
+                document.getElementById('registerForm').classList.remove('hidden');
+                document.getElementById('loginForm').classList.add('hidden');
+            }
+
+            async handleLogin(e) {
+                e.preventDefault();
+                const email = document.getElementById('loginEmail').value;
+                const password = document.getElementById('loginPassword').value;
+
+                try {
+                    const formData = new FormData();
+                    formData.append('email', email);
+                    formData.append('password', password);
+
+                    const response = await fetch(`${this.API_BASE}/api/login/`, {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        localStorage.setItem('token', data.access_token);
+                        localStorage.setItem('userData', JSON.stringify(data.user));
+
+                        this.showSuccess('Logged in successfully!');
+                        this.hideAuthModal();
+
+                        const redirectUrl = sessionStorage.getItem('redirectAfterLogin');
+                        if (redirectUrl) {
+                            sessionStorage.removeItem('redirectAfterLogin');
+                            setTimeout(() => {
+                                window.location.href = redirectUrl;
+                            }, 1000);
+                            return;
+                        }
+
+                        // Redirect based on user type by email
+                        const userEmail = data.user.email || '';
+                        setTimeout(() => {
+                            if (userEmail.endsWith('@engineer.com')) {
+                                window.location.href = 'admin.html';
+                            } else if (userEmail.endsWith('@doctor.com')) {
+                                window.location.href = 'doctor_login.html';
+                            } else {
+                                this.redirectToAnalysis();
+                            }
+                        }, 1000);
+                    } else {
+                        this.showError(data.message || 'Login failed');
+                    }
+                } catch (error) {
+                    this.showError('An error occurred during login');
+                }
+            }
+
+            async handleRegister(e) {
+                e.preventDefault();
+                const name = document.getElementById('registerName').value;
+                const email = document.getElementById('registerEmail').value;
+                const password = document.getElementById('registerPassword').value;
+                const confirmPassword = document.getElementById('confirmPassword').value;
+
+                if (password !== confirmPassword) {
+                    this.showError('Passwords do not match');
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`${this.API_BASE}/api/register/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ name, email, password })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        this.showSuccess('Account created successfully! You can now login');
+                        this.switchToLogin();
+                        document.getElementById('registerForm').reset();
+                    } else {
+                        this.showError(data.message || 'Account creation failed');
+                    }
+                } catch (error) {
+                    this.showError('An error occurred during account creation');
+                }
+            }
+
+            showSuccess(message) {
+                // You can add toast notification here
+                alert(message);
+            }
+
+            showError(message) {
+                // You can add toast notification here
+                alert(message);
+            }
+
+            handleNavbarScroll() {
+                const navbar = document.getElementById('navbar');
+                if (window.scrollY > 100) {
+                    navbar.classList.add('shadow-lg');
+                } else {
+                    navbar.classList.remove('shadow-lg');
+                }
+            }
+
+            setupScrollAnimations() {
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('animate-fadeInUp');
+                        }
+                    });
+                });
+
+                document.querySelectorAll('.card-hover').forEach(el => {
+                    observer.observe(el);
+                });
+            }
+
+            animateCounters() {
+                const counters = document.querySelectorAll('[data-counter]');
+                const options = {
+                    threshold: 0.5
+                };
+
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            const counter = entry.target;
+                            const target = parseInt(counter.getAttribute('data-counter'));
+                            this.animateCounter(counter, target);
+                            observer.unobserve(counter);
+                        }
+                    });
+                }, options);
+
+                counters.forEach(counter => {
+                    observer.observe(counter);
+                });
+            }
+
+            animateCounter(element, target) {
+                let current = 0;
+                const increment = target / 100;
+                const timer = setInterval(() => {
+                    current += increment;
+                    if (current >= target) {
+                        current = target;
+                        clearInterval(timer);
+                    }
+                    element.textContent = Math.floor(current).toLocaleString();
+                }, 20);
+            }
+
+            // Contact form setup
+            setupContactForm() {
+                const contactForm = document.getElementById('contactForm');
+                if (contactForm) {
+                    contactForm.addEventListener('submit', this.handleContactSubmit.bind(this));
+                }
+            }
+
+            async handleContactSubmit(e) {
+                e.preventDefault();
+
+                const name = document.getElementById('contactName').value;
+                const email = document.getElementById('contactEmail').value;
+                const subject = documentgetElementById('contactSubject').value;
+                const message = document.getElementById('contactMessage').value;
+
+                try {
+                    const formData = new FormData();
+                    formData.append('name', name);
+                    formData.append('email', email);
+                    formData.append('subject', subject);
+                    formData.append('message', message);
+                    formData.append('form_type', 'general');
+
+                    const response = await fetch(`${this.API_BASE}/api/contact/`, {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        this.showSuccess(data.message);
+                        document.getElementById('contactForm').reset();
+                    } else {
+                        this.showError(data.message || 'Failed to send message');
+                    }
+                } catch (error) {
+                    this.showError('An error occurred while sending the message');
+                    console.error('Contact form error:', error);
+                }
+            }
+        }
+
+        // Initialize the app
+        const app = new MedicalAIApp();
+    </script>
+    <script>
+        // Role slider logic (shared style with Tailwind)
+        (function () {
+            const slider = document.getElementById('roleSlider');
+            if (!slider) return;
+            const slides = Array.from(slider.querySelectorAll('[data-role-slide]'));
+            const dots = Array.from(slider.querySelectorAll('[data-role-dot]'));
+            const prev = slider.querySelector('#rolePrev');
+            const next = slider.querySelector('#roleNext');
+            const buttons = Array.from(slider.querySelectorAll('button[data-target]'));
+            let index = 0;
+            let timerId;
+
+            const show = (i) => {
+                index = (i + slides.length) % slides.length;
+                slides.forEach((el, idx) => {
+                    const active = idx === index;
+                    el.classList.toggle('hidden', !active);
+                    el.classList.toggle('opacity-0', !active);
+                    el.classList.toggle('opacity-100', active);
+                });
+                dots.forEach((d, idx) => {
+                    d.classList.toggle('bg-primary', idx === index);
+                    d.classList.toggle('bg-gray-300', idx !== index);
+                    d.classList.toggle('dark:bg-gray-600', idx !== index);
+                });
+            };
+
+            const nextSlide = () => show(index + 1);
+            const prevSlide = () => show(index - 1);
+
+            const start = () => {
+                stop();
+                timerId = setInterval(nextSlide, 5000);
+            };
+            const stop = () => timerId && clearInterval(timerId);
+
+            dots.forEach((d, idx) => d.addEventListener('click', () => { show(idx); start(); }));
+            prev && prev.addEventListener('click', () => { prevSlide(); start(); });
+            next && next.addEventListener('click', () => { nextSlide(); start(); });
+
+            buttons.forEach(btn => btn.addEventListener('click', () => {
+                const target = btn.getAttribute('data-target');
+                if (target) window.location.href = target;
+            }));
+
+            slider.addEventListener('mouseenter', stop);
+            slider.addEventListener('mouseleave', start);
+
+            show(0);
+            start();
+        })();
+    </script>
+</body>
+
+</html>

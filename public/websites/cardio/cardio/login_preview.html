@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل الدخول - منصة تحليل الصور الطبية</title>
+
+    <!-- CSS Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#5D5CDE',
+                        secondary: '#0463FA',
+                        dark: '#1B2C51',
+                        light: '#EFF5FF',
+                        accent: '#FF6B6B',
+                        success: '#4ECDC4'
+                    },
+                    fontFamily: {
+                        'arabic': ['Cairo', 'system-ui', 'sans-serif']
+                    }
+                }
+            },
+            darkMode: 'class'
+        }
+
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('dark');
+        }
+    </script>
+
+    <style>
+        body { font-family: 'Cairo', system-ui, sans-serif; }
+        .gradient-bg {
+            background: linear-gradient(135deg, #5D5CDE 0%, #0463FA 50%, #4ECDC4 100%);
+        }
+        .input-field {
+            transition: all 0.3s ease;
+        }
+        .input-field:focus {
+            border-color: #5D5CDE;
+            box-shadow: 0 0 0 3px rgba(93, 92, 222, 0.1);
+        }
+        .btn-shine {
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-shine::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.6s;
+        }
+        .btn-shine:hover::before {
+            left: 100%;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 dark:bg-gray-900 min-h-screen flex items-center justify-center p-4">
+    <!-- Background Pattern -->
+    <div class="fixed inset-0 gradient-bg opacity-10 pointer-events-none"></div>
+
+    <!-- Login Container -->
+    <div class="w-full max-w-md relative z-10">
+        <!-- Logo Section -->
+        <div class="text-center mb-8 animate__animated animate__fadeInDown">
+            <div class="w-20 h-20 gradient-bg rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                <i class="fas fa-heartbeat text-white text-3xl"></i>
+            </div>
+            <h1 class="text-3xl font-bold text-gray-800 dark:text-white mb-2">منصة تحليل الصور الطبية</h1>
+            <p class="text-gray-600 dark:text-gray-400">Cardio AI Analysis</p>
+        </div>
+
+        <!-- Login Form Card -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 animate__animated animate__fadeInUp">
+            <!-- Tab Switcher -->
+            <div class="flex mb-6 bg-gray-100 dark:bg-gray-700 rounded-xl p-1">
+                <button id="loginTab" class="flex-1 py-2 px-4 rounded-lg bg-primary text-white font-semibold transition-all" onclick="switchTab('login')">
+                    <i class="fas fa-sign-in-alt ml-2"></i>تسجيل الدخول
+                </button>
+                <button id="registerTab" class="flex-1 py-2 px-4 rounded-lg text-gray-600 dark:text-gray-300 font-semibold transition-all" onclick="switchTab('register')">
+                    <i class="fas fa-user-plus ml-2"></i>إنشاء حساب
+                </button>
+            </div>
+
+            <!-- Login Form -->
+            <form id="loginForm" class="space-y-6">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                        <i class="fas fa-envelope ml-2"></i>البريد الإلكتروني
+                    </label>
+                    <input type="email" id="loginEmail" required
+                        class="input-field w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                        <i class="fas fa-lock ml-2"></i>كلمة المرور
+                    </label>
+                    <div class="relative">
+                        <input type="password" id="loginPassword" required
+                            class="input-field w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:outline-none">
+                        <button type="button" onclick="togglePassword('loginPassword', 'loginEye')"
+                            class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700">
+                            <i id="loginEye" class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between text-sm">
+                    <label class="flex items-center text-gray-600 dark:text-gray-400 cursor-pointer">
+                        <input type="checkbox" class="ml-2 accent-primary">
+                        تذكرني
+                    </label>
+                    <a href="#" class="text-primary hover:underline font-semibold">نسيت كلمة المرور؟</a>
+                </div>
+
+                <button type="submit" id="loginBtn"
+                    class="w-full gradient-bg text-white py-3 rounded-xl font-bold text-lg hover:opacity-90 transition-all btn-shine">
+                    <i class="fas fa-sign-in-alt ml-2"></i>تسجيل الدخول
+                </button>
+
+                <!-- Demo Credentials -->
+                <div class="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
+                    <p class="text-sm font-semibold text-blue-800 dark:text-blue-300 mb-2">
+                        <i class="fas fa-info-circle ml-2"></i>بيانات تجريبية:
+                    </p>
+                    <div class="text-xs text-blue-700 dark:text-blue-400 space-y-1">
+                        <div>مستخدم: <code class="bg-white dark:bg-gray-800 px-2 py-1 rounded">user@example.com</code> / <code class="bg-white dark:bg-gray-800 px-2 py-1 rounded">password123</code></div>
+                        <div>طبيب: <code class="bg-white dark:bg-gray-800 px-2 py-1 rounded">doctor@example.com</code> / <code class="bg-white dark:bg-gray-800 px-2 py-1 rounded">doctor123</code></div>
+                        <div>مهندس: <code class="bg-white dark:bg-gray-800 px-2 py-1 rounded">admin@example.com</code> / <code class="bg-white dark:bg-gray-800 px-2 py-1 rounded">admin123</code></div>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Register Form -->
+            <form id="registerForm" class="space-y-6 hidden">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                        <i class="fas fa-user ml-2"></i>الاسم الكامل
+                    </label>
+                    <input type="text" id="registerName" required
+                        class="input-field w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                        <i class="fas fa-envelope ml-2"></i>البريد الإلكتروني
+                    </label>
+                    <input type="email" id="registerEmail" required
+                        class="input-field w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                        <i class="fas fa-lock ml-2"></i>كلمة المرور
+                    </label>
+                    <div class="relative">
+                        <input type="password" id="registerPassword" required minlength="6"
+                            class="input-field w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:outline-none">
+                        <button type="button" onclick="togglePassword('registerPassword', 'registerEye')"
+                            class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700">
+                            <i id="registerEye" class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="text-sm text-gray-600 dark:text-gray-400">
+                    <label class="flex items-start cursor-pointer">
+                        <input type="checkbox" required class="ml-2 mt-1 accent-primary">
+                        <span>بإنشاء حساب، أنت توافق على <a href="#" class="text-primary hover:underline">شروط الخدمة</a> و<a href="#" class="text-primary hover:underline">سياسة الخصوصية</a></span>
+                    </label>
+                </div>
+
+                <button type="submit" id="registerBtn"
+                    class="w-full gradient-bg text-white py-3 rounded-xl font-bold text-lg hover:opacity-90 transition-all btn-shine">
+                    <i class="fas fa-user-plus ml-2"></i>إنشاء حساب
+                </button>
+            </form>
+
+            <!-- Language Switcher -->
+            <div class="mt-6 text-center">
+                <a href="login_en.html" class="inline-flex items-center text-gray-600 dark:text-gray-400 hover:text-primary transition-colors">
+                    <i class="fas fa-globe ml-2"></i>
+                    <span class="font-semibold">English Version</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center mt-6 text-gray-600 dark:text-gray-400 text-sm">
+            <p>© 2024 منصة تحليل الصور الطبية. جميع الحقوق محفوظة.</p>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 text-center">
+            <div class="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p class="text-gray-800 dark:text-white font-semibold">جاري التحميل...</p>
+        </div>
+    </div>
+
+    <!-- Mock Services -->
+    <script src="mock-services.js"></script>
+
+    <script>
+        // Tab Switching
+        function switchTab(tab) {
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+            const loginTab = document.getElementById('loginTab');
+            const registerTab = document.getElementById('registerTab');
+
+            if (tab === 'login') {
+                loginForm.classList.remove('hidden');
+                registerForm.classList.add('hidden');
+                loginTab.classList.add('bg-primary', 'text-white');
+                loginTab.classList.remove('text-gray-600', 'dark:text-gray-300');
+                registerTab.classList.remove('bg-primary', 'text-white');
+                registerTab.classList.add('text-gray-600', 'dark:text-gray-300');
+            } else {
+                registerForm.classList.remove('hidden');
+                loginForm.classList.add('hidden');
+                registerTab.classList.add('bg-primary', 'text-white');
+                registerTab.classList.remove('text-gray-600', 'dark:text-gray-300');
+                loginTab.classList.remove('bg-primary', 'text-white');
+                loginTab.classList.add('text-gray-600', 'dark:text-gray-300');
+            }
+        }
+
+        // Toggle Password Visibility
+        function togglePassword(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        // Show Loading
+        function showLoading() {
+            document.getElementById('loadingOverlay').classList.remove('hidden');
+        }
+
+        // Hide Loading
+        function hideLoading() {
+            document.getElementById('loadingOverlay').classList.add('hidden');
+        }
+
+        // Show Success Message
+        function showSuccess(message) {
+            Utils.showNotification(message, 'success');
+        }
+
+        // Show Error Message
+        function showError(message) {
+            Utils.showNotification(message, 'error');
+        }
+
+        // Handle Login
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            showLoading();
+
+            try {
+                const result = await MockAPI.login(email, password);
+
+                if (result.success) {
+                    showSuccess('تم تسجيل الدخول بنجاح!');
+                    
+                    // Redirect based on role
+                    setTimeout(() => {
+                        const user = SessionManager.getUserData();
+                        if (user.role === 'doctor') {
+                            window.location.href = 'Doctor_reports.html';
+                        } else if (user.role === 'admin') {
+                            window.location.href = 'admin.html';
+                        } else {
+                            window.location.href = 'analysis.html';
+                        }
+                    }, 1000);
+                } else {
+                    showError(result.message);
+                }
+            } catch (error) {
+                showError('حدث خطأ غير متوقع');
+                console.error('Login error:', error);
+            } finally {
+                hideLoading();
+            }
+        });
+
+        // Handle Register
+        document.getElementById('registerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('registerName').value;
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+
+            showLoading();
+
+            try {
+                const result = await MockAPI.register(name, email, password);
+
+                if (result.success) {
+                    showSuccess('تم إنشاء الحساب بنجاح!');
+                    setTimeout(() => {
+                        switchTab('login');
+                        document.getElementById('registerForm').reset();
+                    }, 1500);
+                } else {
+                    showError(result.message);
+                }
+            } catch (error) {
+                showError('حدث خطأ غير متوقع');
+                console.error('Register error:', error);
+            } finally {
+                hideLoading();
+            }
+        });
+
+        // Check if already logged in
+        window.addEventListener('DOMContentLoaded', function() {
+            if (SessionManager.isAuthenticated()) {
+                const user = SessionManager.getUserData();
+                if (user.role === 'doctor') {
+                    window.location.href = 'Doctor_reports.html';
+                } else if (user.role === 'admin') {
+                    window.location.href = 'admin.html';
+                } else {
+                    window.location.href = 'analysis.html';
+                }
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Medical Reports - Medical Image Analysis Platform</title>
+    
+    <!-- CSS Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#5D5CDE',
+                        secondary: '#0463FA',
+                        dark: '#1B2C51',
+                        light: '#EFF5FF',
+                        accent: '#FF6B6B',
+                        success: '#4ECDC4',
+                        warning: '#FFA726',
+                        urgent: '#F44336'
+                    },
+                    fontFamily: {
+                        'english': ['Inter', 'system-ui', 'sans-serif']
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'slideInLeft': 'slideInLeft 1s ease-out',
+                        'slideInRight': 'slideInRight 1s ease-out',
+                        'fadeInUp': 'fadeInUp 1s ease-out',
+                        'pulse-slow': 'pulse 3s infinite',
+                        'bounce-slow': 'bounce 2s infinite'
+                    }
+                }
+            },
+            darkMode: 'class'
+        }
+        
+        // Dark mode detection
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('dark');
+        }
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+            if (event.matches) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        });
+    </script>
+    
+    <style>
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        @keyframes slideInLeft {
+            from { transform: translateX(-100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @keyframes fadeInUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #5D5CDE 0%, #0463FA 50%, #4ECDC4 100%);
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, #5D5CDE, #0463FA);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .dark .glass-effect {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(93, 92, 222, 0.2);
+        }
+        
+        .floating-animation {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        .btn-shine {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-shine::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.6s;
+        }
+        
+        .btn-shine:hover::before {
+            left: 100%;
+        }
+        
+        .priority-urgent {
+            background: linear-gradient(135deg, #F44336, #FF5722);
+        }
+        
+        .priority-warning {
+            background: linear-gradient(135deg, #FFA726, #FF9800);
+        }
+        
+        .priority-normal {
+            background: linear-gradient(135deg, #4ECDC4, #26A69A);
+        }
+        
+        .table-hover:hover {
+            background-color: rgba(93, 92, 222, 0.05);
+            transform: scale(1.01);
+            transition: all 0.2s ease;
+        }
+        
+        .dark .table-hover:hover {
+            background-color: rgba(93, 92, 222, 0.1);
+        }
+        
+        .modal-backdrop-blur {
+            backdrop-filter: blur(10px);
+        }
+        
+        .report-section {
+            border-left: 4px solid #5D5CDE;
+            background: linear-gradient(135deg, rgba(93, 92, 222, 0.05), rgba(4, 99, 250, 0.05));
+        }
+        
+        .dark .report-section {
+            background: linear-gradient(135deg, rgba(93, 92, 222, 0.1), rgba(4, 99, 250, 0.1));
+        }
+        
+        .loading-skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+        
+        .dark .loading-skeleton {
+            background: linear-gradient(90deg, #374151 25%, #4B5563 50%, #374151 75%);
+            background-size: 200% 100%;
+        }
+        
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 dark:bg-gray-900 font-english min-h-screen">
+    <!-- Navigation Header -->
+    <nav class="bg-white dark:bg-gray-800 shadow-lg border-b border-gray-200 dark:border-gray-700">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between h-20">
+                <!-- Logo -->
+                <div class="flex items-center space-x-4">
+                    <div class="w-12 h-12 gradient-bg rounded-full flex items-center justify-center">
+                        <i class="fas fa-file-medical text-white text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold gradient-text">My Medical Reports</h1>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Medical Reports Portal</p>
+                    </div>
+                </div>
+
+                <!-- User Actions -->
+                <div class="flex items-center space-x-4">
+                    <button onclick="window.location.href='login_en.html'" class="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors">
+                        <i class="fas fa-home mr-2"></i>
+                        Home
+                    </button>
+                    <button id="logoutBtn" class="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-xl font-semibold transition-all duration-300 btn-shine">
+                        <i class="fas fa-sign-out-alt mr-2"></i>
+                        Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- Page Header -->
+        <div class="text-center mb-12">
+            <div class="inline-flex items-center justify-center w-20 h-20 gradient-bg rounded-full mb-6 floating-animation">
+                <i class="fas fa-clipboard-list text-white text-3xl"></i>
+            </div>
+            <h2 class="text-4xl font-bold text-gray-800 dark:text-white mb-4">My Medical Reports</h2>
+            <p class="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+                Browse and manage all your medical reports in one place
+            </p>
+        </div>
+
+        <!-- Search Section -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-xl mb-8">
+            <div class="flex flex-col md:flex-row gap-4">
+                <div class="flex-1">
+                    <div class="relative">
+                        <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                        <input 
+                            id="search" 
+                            type="text" 
+                            placeholder="Search by title, summary, or doctor name..."
+                            class="w-full pl-12 pr-4 py-4 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-800 dark:text-white text-base transition-all duration-300"
+                        >
+                    </div>
+                </div>
+                <button 
+                    id="searchBtn" 
+                    class="bg-primary hover:bg-purple-600 text-white px-8 py-4 rounded-xl font-semibold transition-all duration-300 btn-shine flex items-center justify-center min-w-[140px]"
+                >
+                    <i class="fas fa-search mr-2"></i>
+                    Search
+                </button>
+            </div>
+        </div>
+
+        <!-- Reports Table -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
+            <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                <h3 class="text-2xl font-bold text-gray-800 dark:text-white">All Reports</h3>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full" id="reportsTable">
+                    <thead class="bg-gray-50 dark:bg-gray-700">
+                        <tr>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">Title</th>
+                            <th class="px-6 py-4 text-center text-sm font-semibold text-gray-700 dark:text-gray-300">Priority</th>
+                            <th class="px-6 py-4 text-center text-sm font-semibold text-gray-700 dark:text-gray-300">Doctor</th>
+                            <th class="px-6 py-4 text-center text-sm font-semibold text-gray-700 dark:text-gray-300">Date</th>
+                            <th class="px-6 py-4 text-center text-sm font-semibold text-gray-700 dark:text-gray-300">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                        <!-- Data will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Status Message -->
+        <div class="text-center mt-6">
+            <p id="msg" class="text-gray-600 dark:text-gray-400"></p>
+        </div>
+    </main>
+
+    <!-- Report Detail Modal -->
+    <div id="reportModal" class="fixed inset-0 z-50 hidden">
+        <div class="modal-backdrop-blur absolute inset-0 bg-black bg-opacity-50" onclick="closeModal()"></div>
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden transform transition-all duration-300 scale-95" id="modalContent">
+                <!-- Modal Header -->
+                <div class="gradient-bg p-6 text-white">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                                <i class="fas fa-file-medical text-white text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 id="modalTitle" class="text-2xl font-bold"></h3>
+                                <p class="text-white text-opacity-90">Medical Report Details</p>
+                            </div>
+                        </div>
+                        <button onclick="closeModal()" class="text-white hover:text-gray-200 transition-colors p-2">
+                            <i class="fas fa-times text-2xl"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Modal Body -->
+                <div class="p-6 overflow-y-auto max-h-[70vh]">
+                    <div id="modalBody" class="space-y-6">
+                        <!-- Report details will appear here -->
+                    </div>
+                </div>
+
+                <!-- Modal Footer -->
+                <div class="p-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+                    <div class="flex justify-between items-center">
+                        <div class="flex gap-3">
+                            <button id="pdfBtn" class="bg-success hover:bg-teal-600 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 btn-shine flex items-center">
+                                <i class="fas fa-download mr-2"></i>
+                                Download PDF
+                            </button>
+                            <button onclick="window.print()" class="bg-secondary hover:bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 btn-shine flex items-center">
+                                <i class="fas fa-print mr-2"></i>
+                                Print
+                            </button>
+                        </div>
+                        <button onclick="closeModal()" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div id="loadingSpinner" class="fixed inset-0 z-50 flex items-center justify-center bg-white dark:bg-gray-900 bg-opacity-80 hidden">
+        <div class="relative">
+            <div class="w-20 h-20 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+            <div class="absolute inset-0 w-20 h-20 border-4 border-secondary border-b-transparent rounded-full animate-spin animate-reverse"></div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+        class MedicalReportsApp {
+            constructor() {
+                this.API_BASE = 'http://localhost:8000';
+                this.token = localStorage.getItem('token');
+                this.user = JSON.parse(localStorage.getItem('user') || 'null');
+                this.currentReport = null;
+                this.init();
+            }
+
+            init() {
+                this.checkAuth();
+                this.setupEventListeners();
+                this.loadReports();
+            }
+
+            checkAuth() {
+                if (!this.token) {
+                    this.showCustomAlert('Please log in first', 'error');
+                    setTimeout(() => {
+                        window.location.href = 'login_en.html';
+                    }, 2000);
+                    return;
+                }
+            }
+
+            setupEventListeners() {
+                document.getElementById('logoutBtn').addEventListener('click', () => this.logout());
+                document.getElementById('searchBtn').addEventListener('click', () => this.searchReports());
+                document.getElementById('search').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') this.searchReports();
+                });
+                document.getElementById('pdfBtn').addEventListener('click', () => this.downloadPDF());
+            }
+
+            logout() {
+                this.showCustomConfirm('Are you sure you want to log out?', () => {
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user');
+                    window.location.href = 'login_en.html';
+                });
+            }
+
+            async loadReports(query = '') {
+                this.showLoading(true);
+                this.updateStatus('Loading reports...');
+
+                try {
+                    const url = new URL(`${this.API_BASE}/api/patient/reports/`);
+                    if (query) url.searchParams.append('search', query);
+
+                    const response = await fetch(url, {
+                        headers: { 'Authorization': `Bearer ${this.token}` }
+                    });
+
+                    if (!response.ok) throw new Error('Failed to fetch data');
+
+                    const reports = await response.json();
+                    this.renderReports(reports);
+                    this.updateStatus(reports.length ? `Loaded ${reports.length} report(s)` : 'No reports available');
+                } catch (error) {
+                    this.updateStatus('Error loading reports');
+                    this.showCustomAlert('Failed to load reports', 'error');
+                } finally {
+                    this.showLoading(false);
+                }
+            }
+
+            renderReports(reports) {
+                const tbody = document.querySelector('#reportsTable tbody');
+                tbody.innerHTML = '';
+
+                reports.forEach(report => {
+                    const row = this.createReportRow(report);
+                    tbody.appendChild(row);
+                });
+            }
+
+            createReportRow(report) {
+                const tr = document.createElement('tr');
+                tr.className = 'table-hover cursor-pointer';
+                
+                const priorityInfo = this.getPriorityInfo(report.priority);
+                
+                tr.innerHTML = `
+                    <td class="px-6 py-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-2 h-8 ${priorityInfo.bgClass} rounded-full"></div>
+                            <div>
+                                <div class="font-semibold text-gray-800 dark:text-white">${report.title}</div>
+                                <div class="text-sm text-gray-500 dark:text-gray-400 truncate max-w-xs">${report.summary || 'No summary available'}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium text-white ${priorityInfo.bgClass}">
+                            <i class="${priorityInfo.icon} mr-1"></i>
+                            ${priorityInfo.text}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        <div class="font-medium text-gray-800 dark:text-white">${report.doctor_name || '-'}</div>
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        <div class="text-gray-600 dark:text-gray-300">${this.formatDate(report.created_at)}</div>
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        <button class="bg-primary hover:bg-purple-600 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300 btn-shine">
+                            <i class="fas fa-eye mr-1"></i>
+                            View
+                        </button>
+                    </td>
+                `;
+
+                tr.querySelector('button').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.openModal(report);
+                });
+
+                tr.addEventListener('click', () => this.openModal(report));
+
+                return tr;
+            }
+
+            getPriorityInfo(priority) {
+                switch (priority) {
+                    case 'urgent':
+                        return { text: 'Urgent', bgClass: 'bg-red-500', icon: 'fas fa-exclamation-triangle' };
+                    case 'warning':
+                        return { text: 'Warning', bgClass: 'bg-orange-500', icon: 'fas fa-exclamation-circle' };
+                    default:
+                        return { text: 'Normal', bgClass: 'bg-green-500', icon: 'fas fa-check-circle' };
+                }
+            }
+
+            openModal(report) {
+                this.currentReport = report;
+                document.getElementById('modalTitle').textContent = report.title;
+                
+                const priorityInfo = this.getPriorityInfo(report.priority);
+                
+                document.getElementById('modalBody').innerHTML = `
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div class="report-section p-4 rounded-xl">
+                            <h4 class="font-bold text-gray-800 dark:text-white mb-3 flex items-center">
+                                <i class="fas fa-info-circle text-primary mr-2"></i>
+                                General Information
+                            </h4>
+                            <div class="space-y-2">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600 dark:text-gray-400">Priority:</span>
+                                    <span class="inline-flex items-center px-2 py-1 rounded-lg text-sm font-medium text-white ${priorityInfo.bgClass}">
+                                        <i class="${priorityInfo.icon} mr-1"></i>
+                                        ${priorityInfo.text}
+                                    </span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600 dark:text-gray-400">Doctor:</span>
+                                    <span class="font-medium text-gray-800 dark:text-white">${report.doctor_name || '-'}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600 dark:text-gray-400">Date:</span>
+                                    <span class="font-medium text-gray-800 dark:text-white">${this.formatDate(report.created_at)}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="report-section p-4 rounded-xl">
+                            <h4 class="font-bold text-gray-800 dark:text-white mb-3 flex items-center">
+                                <i class="fas fa-clipboard-list text-primary mr-2"></i>
+                                Report Summary
+                            </h4>
+                            <p class="text-gray-700 dark:text-gray-300 leading-relaxed">${report.summary || 'No summary available'}</p>
+                        </div>
+                    </div>
+
+                    <div class="report-section p-6 rounded-xl">
+                        <h4 class="font-bold text-gray-800 dark:text-white mb-4 flex items-center">
+                            <i class="fas fa-file-alt text-primary mr-2"></i>
+                            Detailed Content
+                        </h4>
+                        <div class="prose dark:prose-invert max-w-none">
+                            <p class="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">${report.content || 'No content available'}</p>
+                        </div>
+                    </div>
+
+                    <div class="report-section p-6 rounded-xl">
+                        <h4 class="font-bold text-gray-800 dark:text-white mb-4 flex items-center">
+                            <i class="fas fa-lightbulb text-primary mr-2"></i>
+                            Medical Recommendations
+                        </h4>
+                        <div class="prose dark:prose-invert max-w-none">
+                            <p class="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">${report.recommendations || 'No recommendations available'}</p>
+                        </div>
+                    </div>
+                `;
+
+                document.getElementById('reportModal').classList.remove('hidden');
+                setTimeout(() => {
+                    document.getElementById('modalContent').classList.remove('scale-95');
+                    document.getElementById('modalContent').classList.add('scale-100');
+                }, 10);
+            }
+
+            searchReports() {
+                const query = document.getElementById('search').value.trim();
+                this.loadReports(query);
+            }
+
+            async downloadPDF() {
+                if (!this.currentReport) return;
+
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+
+                // Set up font
+                doc.setFont('helvetica');
+
+                // Report header
+                doc.setFontSize(20);
+                doc.text('Medical Report', 105, 20, { align: 'center' });
+                
+                doc.setFontSize(16);
+                doc.text(`Title: ${this.currentReport.title}`, 20, 40);
+                
+                doc.setFontSize(12);
+                doc.text(`Priority: ${this.getPriorityInfo(this.currentReport.priority).text}`, 20, 55);
+                doc.text(`Doctor: ${this.currentReport.doctor_name || 'N/A'}`, 20, 65);
+                doc.text(`Date: ${this.formatDate(this.currentReport.created_at)}`, 20, 75);
+                
+                // Separator line
+                doc.line(20, 85, 190, 85);
+
+                // Content
+                let yPosition = 100;
+                
+                doc.setFontSize(14);
+                doc.text('Summary:', 20, yPosition);
+                yPosition += 10;
+                doc.setFontSize(10);
+                const summaryLines = doc.splitTextToSize(this.currentReport.summary || 'No summary available', 170);
+                doc.text(summaryLines, 20, yPosition);
+                yPosition += summaryLines.length * 5 + 15;
+
+                doc.setFontSize(14);
+                doc.text('Content:', 20, yPosition);
+                yPosition += 10;
+                doc.setFontSize(10);
+                const contentLines = doc.splitTextToSize(this.currentReport.content || 'No content available', 170);
+                doc.text(contentLines, 20, yPosition);
+                yPosition += contentLines.length * 5 + 15;
+
+                doc.setFontSize(14);
+                doc.text('Recommendations:', 20, yPosition);
+                yPosition += 10;
+                doc.setFontSize(10);
+                const recommendationsLines = doc.splitTextToSize(this.currentReport.recommendations || 'No recommendations available', 170);
+                doc.text(recommendationsLines, 20, yPosition);
+
+                doc.save(`medical_report_${this.currentReport.id}.pdf`);
+            }
+
+            formatDate(dateString) {
+                return dateString ? new Date(dateString).toLocaleString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                }) : '';
+            }
+
+            updateStatus(message) {
+                document.getElementById('msg').textContent = message;
+            }
+
+            showLoading(show) {
+                const spinner = document.getElementById('loadingSpinner');
+                if (show) {
+                    spinner.classList.remove('hidden');
+                } else {
+                    spinner.classList.add('hidden');
+                }
+            }
+
+            showCustomAlert(message, type = 'info') {
+                const alertDiv = document.createElement('div');
+                alertDiv.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg max-w-sm transform transition-all duration-300 translate-x-full`;
+                
+                const bgClass = type === 'error' ? 'bg-red-500' : type === 'success' ? 'bg-green-500' : 'bg-blue-500';
+                alertDiv.classList.add(bgClass);
+                
+                alertDiv.innerHTML = `
+                    <div class="flex items-center text-white">
+                        <i class="fas fa-${type === 'error' ? 'exclamation-circle' : type === 'success' ? 'check-circle' : 'info-circle'} mr-3"></i>
+                        <span>${message}</span>
+                    </div>
+                `;
+                
+                document.body.appendChild(alertDiv);
+                
+                setTimeout(() => alertDiv.classList.remove('translate-x-full'), 100);
+                setTimeout(() => {
+                    alertDiv.classList.add('translate-x-full');
+                    setTimeout(() => document.body.removeChild(alertDiv), 300);
+                }, 3000);
+            }
+
+            showCustomConfirm(message, onConfirm) {
+                const modal = document.createElement('div');
+                modal.className = 'fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50';
+                modal.innerHTML = `
+                    <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg max-w-sm w-full mx-4 transform transition-all duration-300 scale-95">
+                        <div class="text-center">
+                            <i class="fas fa-question-circle text-primary text-4xl mb-4"></i>
+                            <p class="text-gray-700 dark:text-gray-300 mb-6 text-lg">${message}</p>
+                            <div class="flex justify-center space-x-3">
+                                <button class="cancel-btn px-6 py-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all duration-300">Cancel</button>
+                                <button class="confirm-btn px-6 py-2 bg-red-500 text-white hover:bg-red-600 rounded-lg transition-all duration-300">Confirm</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(modal);
+                setTimeout(() => modal.querySelector('div').classList.remove('scale-95'), 10);
+                
+                modal.querySelector('.cancel-btn').onclick = () => {
+                    modal.querySelector('div').classList.add('scale-95');
+                    setTimeout(() => document.body.removeChild(modal), 300);
+                };
+                
+                modal.querySelector('.confirm-btn').onclick = () => {
+                    modal.querySelector('div').classList.add('scale-95');
+                    setTimeout(() => {
+                        document.body.removeChild(modal);
+                        onConfirm();
+                    }, 300);
+                };
+            }
+        }
+
+        // Global functions for modal
+        function closeModal() {
+            const modal = document.getElementById('reportModal');
+            const content = document.getElementById('modalContent');
+            content.classList.add('scale-95');
+            content.classList.remove('scale-100');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        // Initialize the app
+        const app = new MedicalReportsApp();
+    </script>
+</body>
+</html>
